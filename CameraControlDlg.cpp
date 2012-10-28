@@ -31,6 +31,7 @@
 #include "CLifeViewDlg.h"
 #include <shlobj.h>
 
+#include "trigger.h"
 
 
 #ifdef _DEBUG
@@ -42,7 +43,6 @@
 #define WM_USER_PROGRESS_REPORT			WM_APP+2
 
 CString PhotoSavePath;
-bool evfAFOff=1;
 // CCameraControlDlg 
 CLifeViewDlg* LifeViewDlg=NULL;
 
@@ -51,9 +51,10 @@ CCameraControlDlg::CCameraControlDlg(CWnd* pParent )
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
   LifeViewDlg=new CLifeViewDlg();
-  
   LifeViewDlg->Create(IDD_DIALOG1,NULL);
-  //LifeViewDlg->_controller=this->_controller;
+  LifeViewDlg->SetControl(this);
+  evfAFOff=1;
+  OnShoot=NULL;
 }
 
 void CCameraControlDlg::DoDataExchange(CDataExchange* pDX)
@@ -101,6 +102,9 @@ void CCameraControlDlg::DoDataExchange(CDataExchange* pDX)
   DDX_Control(pDX, IDC_EDIT6, number_signs);
   //	DDX_Control(pDX, IDC_EDIT7, state);
   DDX_Control(pDX, IDC_EDIT7, _edit);
+  DDX_Control(pDX, IDC_BUTTON27, focusbtn);
+  DDX_Control(pDX, IDC_EDIT8, PictureWidthT);
+  DDX_Control(pDX, IDC_EDIT9, PictureHeightT);
 }
 
 BEGIN_MESSAGE_MAP(CCameraControlDlg, CDialog)
@@ -116,9 +120,11 @@ BEGIN_MESSAGE_MAP(CCameraControlDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON26, &CCameraControlDlg::OnBnClickedButton26)
 	//ON_BN_CLICKED(IDC_BUTTON27, &CCameraControlDlg::OnBnClickedButton27)
 //  ON_BN_CLICKED(IDC_BUTTON22, &CCameraControlDlg::OnBnClickedButton22)
-ON_WM_SIZE()
+//ON_WM_SIZE()
 //ON_BN_CLICKED(IDC_BUTTON21, &CCameraControlDlg::OnBnClickedButton21)
 ON_BN_CLICKED(IDC_BUTTON27, &CCameraControlDlg::OnBnClickedButton27)
+ON_BN_CLICKED(IDC_BUTTON28, &CCameraControlDlg::OnBnClickedButton28)
+ON_EN_CHANGE(IDC_EDIT1, &CCameraControlDlg::OnEnChangeEdit1)
 END_MESSAGE_MAP()
 
 
@@ -144,6 +150,7 @@ BOOL CCameraControlDlg::OnInitDialog()
 
 	setupListener(_controller);
 	setupObserver(getCameraModel());
+  LifeViewDlg->setCameraController(this->_controller);
 
 	//Execute controller
 	_controller->run();
@@ -163,10 +170,15 @@ BOOL CCameraControlDlg::OnInitDialog()
 	this->InitProgramSett();
 	//this->InitPhotoSett();
 
+  //move to left size of the screen
   this->MoveWindow(20,20,380,680,1);
-  //LifeViewDlg->ShowWindow(SW_SHOW);
+
+  //move invisible lifeview window to edge
   LifeViewDlg->MoveWindow(20+380+5,20,500,500,1);
-	return TRUE;   // return TRUE  unless you set the focus to a control
+
+  //auto define aspect ratio for currect photo device
+  //LifeViewDlg->OnSize(0,500,500);
+	return TRUE;
 }
 
 void CCameraControlDlg::setupListener(ActionListener* listener)
@@ -251,7 +263,10 @@ void CCameraControlDlg::setupObserver(Observable* ob)
 
 void CCameraControlDlg::OnClose()
 {
-	// TODO : The control notification handler code is added here or Predetermined processing is called. 
+	int z=MessageBox("Хотите ли вы сохранить текущие настройки перед выходом?","Сообщение",MB_YESNO);
+  if(z==IDYES)
+    OnBnClickedButton23();
+
 	fireEvent("closing");
 	Lifeview.EnableWindow(FALSE);
 	_btnTakePicture.EnableWindow(FALSE);	
@@ -272,6 +287,8 @@ void CCameraControlDlg::OnClose()
   LifeViewDlg->CloseWindow();
   LifeViewDlg->DestroyWindow();
   delete(LifeViewDlg);
+  if(OnShoot!=NULL)
+    delete(OnShoot);
 	__super::OnClose();
 }
 
@@ -328,6 +345,7 @@ void CCameraControlDlg::CheckFocusEnabled(Observable* from, CameraEvent *e)
                 evfAFOff=1;
 	              fireEvent("evfAFOff");
                 shootbtn.EnableWindow(1);
+                focusbtn.EnableWindow(1);
                 return;
               }
             }
@@ -375,6 +393,34 @@ void CCameraControlDlg::update(Observable* from, CameraEvent *e)
 
 LRESULT CCameraControlDlg::OnDownloadComplete(WPARAM wParam, LPARAM lParam)
 {
+  CString data="";
+  AppendFormatedFileName(&data,"%projectdir%filedir %prefix%number");
+  
+  /*
+  tmp.Format(" %d %d",LifeViewDlg->_pictureBox.data.sizeJpegLarge.width,LifeViewDlg->_pictureBox.data.sizeJpegLarge.height);
+  data.Append(tmp);*/
+  data.Append(" ");
+  CString tmp;
+  PictureWidthT.GetWindowTextA(tmp);
+  data.Append(tmp);
+  data.Append(" ");
+  PictureHeightT.GetWindowTextA(tmp);
+  data.Append(tmp);
+  CString filename="log.txt";
+	FILE *stream;
+	size_t  numwritten;
+	if( fopen_s( &stream, filename, "a+t" ) == 0 )
+	{
+    unsigned int s=(unsigned int)data.GetLength();
+	  numwritten = fwrite(data, sizeof(char),s, stream );
+    s=1;
+	  numwritten = fwrite("\n", sizeof(char),s, stream );
+	  fclose( stream );
+	}
+	else
+	  ShowError( "Problem opening the log file\n" );
+
+
 	//End of download of image
 	_progress.SetPos(0);
 
@@ -389,6 +435,7 @@ LRESULT CCameraControlDlg::OnDownloadComplete(WPARAM wParam, LPARAM lParam)
 	current_page.SetWindowTextA(buffer);
   shootbtn.EnableWindow(1);
   shootbtn.SetFocus();
+
 	return 0;
 }
 
@@ -456,6 +503,25 @@ void CCameraControlDlg::InitPhotoSett()
 	xmlvec->Parse(f,"xml");
 	delete(f);
 	xml* child=xmlvec->GetItemOnlyChild(xmlvec->MainElement,"xml",1);
+  
+  xml* triggers=xmlvec->GetItemOnlyChild(child,"triggers",0);
+  if(triggers!=NULL)
+  {
+    xml* ShootTrigger=xmlvec->GetItemOnlyChild(triggers,"OnShoot",0);
+    if(ShootTrigger!=NULL)
+    {
+      this->OnShoot=new trigger();
+      xml* prop=xmlvec->GetItemOnlyChild(ShootTrigger,"type",1);
+      OnShoot->type=atoi(prop->subtext);
+      //prop=xmlvec->GetItemOnlyChild(ShootTrigger,"name",1);
+      //OnShoot->name=new char[strlen(prop->subtext)];
+      //strcpy_s(OnShoot->name,strlen(prop->subtext),prop->subtext);
+      prop=xmlvec->GetItemOnlyChild(ShootTrigger,"action",1);
+      OnShoot->action=new char[strlen(prop->subtext)+1];
+      strcpy_s(OnShoot->action,strlen(prop->subtext)+1,prop->subtext);
+    }
+  }
+
 	child=xmlvec->GetItemOnlyChild(child,"settings",1);
 	
 	//Loading to select lists
@@ -628,12 +694,9 @@ void CCameraControlDlg::OnBnClickedButton24()
 		return;
 	}
 	LPITEMIDLIST pidlRoot = NULL;
-	char* d=GetFullSavePath(0);
 	PCWSTR temp;
 	CString tmp;
-
-	tmp.Append(d);
-	delete(d);
+  AppendFileNamePart(&tmp,"drive");
 	#ifdef _UNICODE
 		temp = LPCTSTR(tmp);
 	#else
@@ -676,38 +739,69 @@ void CCameraControlDlg::OnBnClickedButton24()
 //	
 //}
 
-char* CCameraControlDlg::GetFullSavePath(int mode)
-{//0 - only get drive+project dir
- //1 - getdrive+project+file dir
-//2 - full path, including prefix
+void CCameraControlDlg::AppendFormatedFileName(CString* to, char* format)
+{
+  CString tmp,tmp2;
+  tmp=format;
+	  AppendFileNamePart(&tmp2,"drive");
+    tmp.Replace("%drive",tmp2);
+    tmp2="";
+	  AppendFileNamePart(&tmp2,"projectdir");
+    tmp.Replace("%projectdir",tmp2);
+    tmp2="";
+	  AppendFileNamePart(&tmp2,"filedir");
+    tmp.Replace("%filedir",tmp2);
+    tmp2="";
+	  AppendFileNamePart(&tmp2,"prefix");
+    tmp.Replace("%prefix",tmp2);
+    tmp2="";
+	  AppendFileNamePart(&tmp2,"number");
+    tmp.Replace("%number",tmp2);
+    tmp2="";
+	  AppendFileNamePart(&tmp2,"ext");
+    tmp.Replace("%ext",tmp2);
+    to->Append(tmp);
+}
+
+void CCameraControlDlg::AppendFileNamePart(CString * to,char* mode)
+{
 	//1 by default
-	CString p,temp;
-	drivebox.GetWindowTextA(p);
-	p=p.GetAt(2);
-	p.Append(":\\");
-	projectdir.GetWindowTextA(temp);
-	if(temp.GetLength())
-	{
-		p.Append(temp);
-		p.Append("\\");
-	}
-	if(mode)
+	CString temp;
+  if(!strcmp(mode,"drive"))
+  {
+	  drivebox.GetWindowTextA(temp);
+	  temp=temp.GetAt(2);
+	  temp.Append(":\\");
+    to->Append(temp);
+  }
+  else if(!strcmp(mode,"projectdir"))
+  {
+	  projectdir.GetWindowTextA(temp);
+	  if(temp.GetLength())
+	  {
+		  to->Append(temp);
+		  to->Append("\\");
+	  }
+  }
+  else if(!strcmp(mode,"filedir"))
 	{
 		filedir.GetWindowTextA(temp);
 		if(temp.GetLength())
 		{
-			p.Append(temp);
-			p.Append("\\");
+			to->Append(temp);
+			to->Append("\\");
 		}
 	}
-	if(mode==2)
+  else if(!strcmp(mode,"prefix"))
 	{
 		prefix.GetWindowTextA(temp);
 		if(temp.GetLength())
 		{
-			p.Append(temp);
-			//p.Append("_");
+			to->Append(temp);
 		}
+  }
+  else if(!strcmp(mode,"number"))
+  {
 		current_page.GetWindowTextA(temp);
 		if(temp.GetLength())
 		{
@@ -716,15 +810,22 @@ char* CCameraControlDlg::GetFullSavePath(int mode)
 			int nulls=atoi(temp2.GetBuffer());
 			while(temp.GetLength()<nulls)
 				temp.Insert(0,'0');
-			p.Append(temp);
+			to->Append(temp);
 		}
-
 	}
-	int n=p.GetLength()+1;
-	char * res=new char[n];
-	strcpy_s(res,n,p.GetBuffer());
-	return res;
+  else if(!strcmp(mode,"ext"))
+  {
+    _comboImageQuality.GetWindowText(temp);
+	  if(temp.Find("Jpeg")!=-1)
+		  to->Append(".JPG");
+	  else if(temp.Find("RAW")!=-1)
+		  to->Append(".CR2");
+	  else if(temp.Find("Raw")!=-1)
+		  to->Append(".CR2");
+  }
+	return;
 }
+
 
 void CCameraControlDlg::OnBnClickedButton26()
 {
@@ -737,21 +838,24 @@ void CCameraControlDlg::OnBnClickedButton26()
 		return;
 	}
 	
-	char* d=GetFullSavePath();
-  CString dir=d;
-	delete[] d;
+  CString dir;
+	/*AppendFileNamePart(&dir,"drive");
+	AppendFileNamePart(&dir,"projectdir");
+	AppendFileNamePart(&dir,"filedir");*/
+  AppendFormatedFileName(&dir,"%drive%projectdir%filedir");
+	
   if(!DirectoryExists(dir.GetBuffer()))
 	{
 		CString msg;
 		msg.Append("Директория '");
-		msg.Append(dir.GetBuffer());
+		msg.Append(dir);
 		msg.Append("' не существует. Создать?");
 		int n=MessageBox(msg,"Предупреждение",MB_OKCANCEL);
 		if(n==IDCANCEL)
 			return;
 		else
 		{
-		int r=SHCreateDirectoryEx(NULL,dir.GetBuffer(),NULL);
+		int r=SHCreateDirectoryEx(NULL,dir,NULL);
 		if(r==ERROR_SUCCESS)
 			MessageBox("Директория успешно содана","Сообщение",MB_OK);
 		else
@@ -761,55 +865,60 @@ void CCameraControlDlg::OnBnClickedButton26()
 		}
 		}
 	}
-	d=GetFullSavePath(2);
-	PhotoSavePath=d;
+	CString fname;
+  AppendFormatedFileName(&fname,"%drive%projectdir%filedir%prefix%number%ext");/*
+	AppendFileNamePart(&fname,"drive");
+	AppendFileNamePart(&fname,"projectdir");
+	AppendFileNamePart(&fname,"filedir");
+	AppendFileNamePart(&fname,"prefix");
+	AppendFileNamePart(&fname,"number");
+	AppendFileNamePart(&fname,"ext");*/
 
-  test.Append(d);
-	delete[] d;
-  _comboImageQuality.GetWindowText(temp3);
-	if(temp3.Find("Jpeg")!=-1)
-		test.Append(".JPG");
-	else if(temp3.Find("RAW")!=-1)
-		test.Append(".CR2");
-	else if(temp3.Find("Raw")!=-1)
-		test.Append(".CR2");
-	if(FileExists(test.GetBuffer()))
+	if(FileExists(fname.GetBuffer()))
 	{
 		int n=MessageBox("Такой файл уже существует. Вы уверены, что хотите его перезаписать?","Предупреждение",MB_OKCANCEL);
 		if(n==IDCANCEL)
 			return;
 	}
-
-//	_btnTakePicture.OnClicked();
+  PhotoSavePath=fname;//save here
   shootbtn.EnableWindow(0);
 	fireEvent("TakePicture");
+  return;//trigger in beta mode
+  if(OnShoot!=NULL)
+  {
+    CString tmp;
+    tmp=OnShoot->action;
+    this->AppendFormatedFileName(&tmp,OnShoot->action);//"%drive%projectdir%filedir%prefix%number%ext");
+    /*
+	  AppendFileNamePart(&tmp2,"drive");
+    tmp.Replace("%drive",tmp2);
+    tmp2="";
+	  AppendFileNamePart(&tmp2,"projectdir");
+    tmp.Replace("%projectdir",tmp2);
+    tmp2="";
+	  AppendFileNamePart(&tmp2,"filedir");
+    tmp.Replace("%filedir",tmp2);
+    tmp2="";
+	  AppendFileNamePart(&tmp2,"prefix");
+    tmp.Replace("%prefix",tmp2);
+    tmp2="";
+	  AppendFileNamePart(&tmp2,"number");
+    tmp.Replace("%number",tmp2);
+    tmp2="";
+	  AppendFileNamePart(&tmp2,"ext");
+    tmp.Replace("%ext",tmp2);
+    tmp2="";*/
+    OnShoot->run(tmp.GetBuffer());
+  }
 }
 
 
-
+/*
 void CCameraControlDlg::OnSize(UINT nType, int cx, int cy)
 {
-  /*
-    HRGN Region;
-    POINT Points[4];
-
-    //Define the points accross down
-    Points[0].x=100;
-    Points[1].x= 200;
-    Points[2].x=0;
-    Points[3].x=305;
-    Points[0].y=30;
-    Points[1].y=200;
-    Points[2].y= 200;
-    Points[3].y=30;
-
-    //Define the region
-    Region = CreatePolygonRgn(Points, 4, ALTERNATE);
-
-
-  _pictureBox.SetWindowRgn(Region,1);*/
+  
   __super::OnSize(nType, cx, cy);
-}
+}*/
 
 //void CCameraControlDlg::OnBnClickedButton21()
 //{
@@ -818,8 +927,28 @@ void CCameraControlDlg::OnSize(UINT nType, int cx, int cy)
 
 void CCameraControlDlg::OnBnClickedButton27()
 {
-  shootbtn.EnableWindow(0);
-  fireEvent("evfAFOn");
-  evfAFOff=0;
-  // TODO: Add your control notification handler code here
+  if(evfAFOff==1)
+  {
+    shootbtn.EnableWindow(0);
+    focusbtn.EnableWindow(0);
+    fireEvent("evfAFOn");
+    evfAFOff=0;
+  }
+}
+
+void CCameraControlDlg::OnBnClickedButton28()
+{
+    CString tmp;
+    AppendFormatedFileName(&tmp,"%drive%projectdir%filedir");
+	  /*AppendFileNamePart(&tmp,"drive");
+	  AppendFileNamePart(&tmp,"projectdir");
+	  AppendFileNamePart(&tmp,"filedir");*/
+    //MessageBox(tmp);
+    ShellExecute (NULL,"explore",tmp,NULL,NULL,SW_SHOWNORMAL);
+}
+
+void CCameraControlDlg::OnEnChangeEdit1()
+{
+  // prefix changed. set current page to 1
+  current_page.SetWindowTextA("1");
 }

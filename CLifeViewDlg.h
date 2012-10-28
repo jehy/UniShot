@@ -29,11 +29,21 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
   CEVFPictureBox _pictureBox;
-	//CameraController* _controller;
-  //afx_msg void OnBnClickedOk();
-  //afx_msg void OnBnClickedCancel();
+  afx_msg void OnBnClickedOk();
+  afx_msg void OnBnClickedCancel();
   afx_msg void OnSize(UINT nType, int cx, int cy);
   afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
   afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
-//  afx_msg void OnNcMouseMove(UINT nHitTest, CPoint point);
+	void setCameraController(CameraController* controller){_controller = controller;}
+protected:
+	CameraController* _controller;
+  CPoint PrevSize;
+  int MouseState;
+  CPoint FromPoint;
+public:
+  void SetControl(CCameraControlDlg* Control);
+  CCameraControlDlg* Control;
+	//virtual BOOL OnInitDialog();
+//public:
+ // afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 };

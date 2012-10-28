@@ -156,7 +156,6 @@ int file_put_contents(char* filename,char* data,int Bytes)
 	  numwritten = fwrite(data, sizeof(char),s, stream );
 	  //printf( "Wrote %d items\n", numwritten );
 	  fclose( stream );
-
 	}
 	else
 	  ShowError( "Problem opening the file\n" );

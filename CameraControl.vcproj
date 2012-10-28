@@ -69,7 +69,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="EDSDK.lib"
+				AdditionalDependencies="EDSDK.lib wininet.lib"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="./../../../EDSDK/Library/"
 				GenerateDebugInformation="true"
@@ -107,7 +107,7 @@
 			IntermediateDirectory="Release"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			UseOfMFC="2"
+			UseOfMFC="1"
 			CharacterSet="2"
 			>
 			<Tool
@@ -132,7 +132,7 @@
 				AdditionalIncludeDirectories="./../../../EDSDK/Header/;./Command;./Camera;./Class"
 				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG"
 				MinimalRebuild="false"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				TreatWChar_tAsBuiltInType="true"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
@@ -153,7 +153,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="EDSDK.lib"
+				AdditionalDependencies="EDSDK.lib wininet.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="./../../../EDSDK/Library/"
 				GenerateDebugInformation="true"
@@ -432,6 +432,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\trigger.h"
+					>
+				</File>
+				<File
 					RelativePath=".\common\xml.h"
 					>
 				</File>
@@ -535,6 +539,10 @@
 				</File>
 				<File
 					RelativePath=".\common\mvector.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\trigger.cpp"
 					>
 				</File>
 				<File

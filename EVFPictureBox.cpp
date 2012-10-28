@@ -49,7 +49,7 @@ void CEVFPictureBox::update(Observable* from, CameraEvent *e)
 
 	if(event == "EvfDataChanged")
 	{
-		EVF_DATASET data = *static_cast<EVF_DATASET *>(e->getArg());
+		data = *static_cast<EVF_DATASET *>(e->getArg());
 	
 		//The update processing can be executed from another thread. 
 		::SendMessage(this->m_hWnd, WM_USER_EVF_DATA_CHANGED, (WPARAM) &data, NULL);
@@ -172,8 +172,9 @@ void CEVFPictureBox::OnDrawImage(CDC *pDC, unsigned char* pbyteImage, int size)
 	image.StretchBlt(pDC->GetSafeHdc(),  0,0,rect.Width(),rect.Height(),0,0,image.GetWidth(), image.GetHeight(),SRCCOPY);
 	//image.BitBlt(hDC, 0, 0);
 	image.Destroy();
-
 	::GlobalFree(hMem);
+  
+  this->GetParent()->PostMessageA(WM_SIZE,0,MAKELPARAM(0,0));
 }
 
 

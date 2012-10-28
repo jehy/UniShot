@@ -152,6 +152,7 @@ xml* AllXml::GetItemOnlyChild(xml* parent, char* name,bool necc)
 		err.Append(parent->subtext);
 		err.Append(")\n\nTerminating...");
 		ShowError(err.GetBuffer(err.GetLength()));
+    exit(0);
 	}
 	return NULL;
 }

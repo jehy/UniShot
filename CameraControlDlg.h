@@ -33,14 +33,17 @@
 #include "ActionButton.h"
 #include "EvfZoomButton.h"
 #include "afxwin.h"
+#include "trigger.h"
 
 // CCameraControlDlg Dialog
 class CCameraControlDlg : public CDialog, public ActionSource, public Observer
 {
 public://jehy
 	void SavePhotoSett(char* path);
+  void AppendFormatedFileName(CString* to, char* format);
 	void InitProgramSett();
 	void InitPhotoSett();
+  trigger* OnShoot;
 	
 // Construction
 private:
@@ -77,7 +80,7 @@ public:
 	CEvfZoomButton	_btnZoomZoom;
 	CProgressCtrl	_progress;
 	CEdit			_edit;
-	CEVFPictureBox	_pictureBox;
+	//CEVFPictureBox	_pictureBox;
 	CAEMode			_comboAEMode;
 	CTv				_comboTv;
 	CAv				_comboAv;
@@ -120,7 +123,8 @@ public:
 	CEdit filedir;
 	afx_msg void OnBnClickedButton24();
 //	afx_msg void OnBnClickedButton1();
-	char* GetFullSavePath(int mode=1);
+  void AppendFileNamePart(CString * to,char* mode);
+
 	CEdit projectdir;
 	afx_msg void OnBnClickedButton26();
 	CButton shootbtn;
@@ -133,8 +137,14 @@ public:
   void SetComboSett(CComboBox* combo,char* val);
 	//CEdit state;
 //  afx_msg void OnBnClickedButton22();
-  afx_msg void OnSize(UINT nType, int cx, int cy);
+  //afx_msg void OnSize(UINT nType, int cx, int cy);
   //CEdit _edit;
 //  afx_msg void OnBnClickedButton21();
   afx_msg void OnBnClickedButton27();
+  CButton focusbtn;
+  bool evfAFOff;
+  afx_msg void OnBnClickedButton28();
+  afx_msg void OnEnChangeEdit1();
+  CEdit PictureWidthT;
+  CEdit PictureHeightT;
 };

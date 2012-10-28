@@ -23,7 +23,8 @@
 class CEVFPictureBox : public CStatic, public ActionSource , public Observer
 {
 	DECLARE_DYNAMIC(CEVFPictureBox)
-	
+public:
+  EVF_DATASET data;
 private:
 	BOOL active;
 	EdsFocusInfo	m_focusInfo;
