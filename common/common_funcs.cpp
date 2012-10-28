@@ -9,6 +9,81 @@ extern HANDLE DieEvent;
 #else
 #endif
 
+int CALLBACK BrowseForFolderCallback(HWND hwnd,UINT uMsg,LPARAM lp, LPARAM pData)
+{
+	char szPath[MAX_PATH];
+
+	switch(uMsg)
+	{
+		case BFFM_INITIALIZED:
+			SendMessage(hwnd, BFFM_SETSELECTION, TRUE, pData);
+			break;
+
+		case BFFM_SELCHANGED: 
+			if (SHGetPathFromIDList((LPITEMIDLIST) lp ,szPath)) 
+			{
+				SendMessage(hwnd, BFFM_SETSTATUSTEXT,0,(LPARAM)szPath);	
+
+			}
+			break;
+	}
+
+	return 0;
+}
+
+void GetComboSett(CComboBox* combo,char*name,CString* SettText)
+{
+  CString temp;
+  combo->GetWindowText(temp);
+  SettText->Append("<");
+  SettText->Append(name);
+  SettText->Append(">");
+  SettText->Append(temp);
+  SettText->Append("</");
+  SettText->Append(name);
+  SettText->Append(">");
+}
+void SetComboSett(CComboBox* combo,char* val)
+{
+  CString tmp;
+  for(int i=0;i<combo->GetCount();i++)
+  {
+    combo->GetLBText(i,tmp);
+    if(!strcmp(tmp.GetBuffer(),val))
+      combo->SetCurSel(i);
+  }
+}
+
+void SetBigFont(CEdit* cedit)
+{
+  CFont *pFont;
+  CFont m_pFont;
+  //if (m_pFont==NULL) 
+  //{
+    pFont = cedit->GetFont();
+    LOGFONT lfLogFont;
+    pFont->GetLogFont(&lfLogFont);
+    //lfLogFont.lfWeight = FW_BOLD;
+    strcpy_s(lfLogFont.lfFaceName,32,"Times New Roman");
+    lfLogFont.lfHeight -= 8;  // height on the screen device is negative so to increase thesize you have to add a negative value
+    m_pFont.CreateFontIndirect(&lfLogFont);
+  //}
+  cedit->SetFont(&m_pFont);
+} 
+
+void SetDropDownHeight(CComboBox* pMyComboBox, int itemsToShow)
+{
+  //Get rectangles
+  CRect rctComboBox, rctDropDown;
+  pMyComboBox->GetClientRect(&rctComboBox); //Combo rect
+  pMyComboBox->GetDroppedControlRect(&rctDropDown); //DropDownList rect
+
+  int itemHeight = pMyComboBox->GetItemHeight(-1); //Get Item height
+
+  pMyComboBox->GetParent()->ScreenToClient(&rctDropDown); //Converts coordinates
+  rctDropDown.bottom = rctDropDown.top + rctComboBox.Height() + itemHeight*itemsToShow; //Set height
+  pMyComboBox->MoveWindow(&rctDropDown); //enable changes
+}
 
 void ShowError(char* err, int Cryt)
 {

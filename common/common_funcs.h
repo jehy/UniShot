@@ -1,6 +1,11 @@
 #pragma once
 #include "xml.h"
 #include "allxml.h"
+void SetDropDownHeight(CComboBox* pMyComboBox, int itemsToShow);
+void SetBigFont(CEdit* cedit);
+void SetComboSett(CComboBox* combo,char* val);
+void GetComboSett(CComboBox* combo,char*name,CString* SettText);
+int CALLBACK BrowseForFolderCallback(HWND hwnd,UINT uMsg,LPARAM lp, LPARAM pData);
 void ShowError(char* err,int Cryt=0);
 void ShowError(CString err,int Cryt=0);
 char* GetApplicationDir();

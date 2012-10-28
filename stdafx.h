@@ -43,3 +43,17 @@
 
 #include "afxinet.h"
 #include "common.h"
+#include <vector>
+#include <map>
+#include <shlobj.h>
+
+#include "EDSDK.h"
+#include "EDSDKTypes.h"
+using namespace std;
+
+#include "common\xml.h"
+#include "common\mvector.h"
+#include "common\allxml.h"
+#include "common\common_funcs.h"
+#include "trigger.h"
+#include "hotkey.h"

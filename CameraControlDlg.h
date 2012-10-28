@@ -1,18 +1,3 @@
-/******************************************************************************
-*                                                                             *
-*   PROJECT : EOS Digital Software Development Kit EDSDK                      *
-*      NAME : CameraControlDlg.h                                              *
-*                                                                             *
-*   Description: This is the Sample code to show the usage of EDSDK.          *
-*                                                                             *
-*                                                                             *
-*******************************************************************************
-*                                                                             *
-*   Written and developed by Camera Design Dept.53                            *
-*   Copyright Canon Inc. 2006-2008 All Rights Reserved                        *
-*                                                                             *
-*******************************************************************************/
-
 #pragma once
 
 #include <map>
@@ -43,7 +28,11 @@ public://jehy
   void AppendFormatedFileName(CString* to, char* format);
 	void InitProgramSett();
 	void InitPhotoSett();
-  trigger* OnShoot;
+  //void SetFont(CEdit* cedit);
+  void SetNextFocus();
+  afx_msg void FocusPhoto();
+  BOOL PreTranslateMessage(MSG* pMsg);
+  void RunAction(char* action);
 	
 // Construction
 private:
@@ -121,29 +110,18 @@ public:
 	afx_msg void OnBnClickedButton23();
 	CEdit settings_file;
 	CEdit filedir;
-	afx_msg void OnBnClickedButton24();
-//	afx_msg void OnBnClickedButton1();
+	afx_msg void SelectFileDir();
   void AppendFileNamePart(CString * to,char* mode);
-
 	CEdit projectdir;
-	afx_msg void OnBnClickedButton26();
+	afx_msg void Shoot();
 	CButton shootbtn;
 	CEdit prefix;
 	CEdit current_page;
-	CEdit number_signs;
-	//afx_msg void OnBnClickedButton27();  
+	CEdit number_signs; 
   void CheckFocusEnabled(Observable* from, CameraEvent *e);
-  void GetComboSett(CComboBox* combo,char*name,CString* SettText);
-  void SetComboSett(CComboBox* combo,char* val);
-	//CEdit state;
-//  afx_msg void OnBnClickedButton22();
-  //afx_msg void OnSize(UINT nType, int cx, int cy);
-  //CEdit _edit;
-//  afx_msg void OnBnClickedButton21();
-  afx_msg void OnBnClickedButton27();
   CButton focusbtn;
   bool evfAFOff;
-  afx_msg void OnBnClickedButton28();
+  afx_msg void OpenFileDir();
   afx_msg void OnEnChangeEdit1();
   CEdit PictureWidthT;
   CEdit PictureHeightT;
@@ -151,4 +129,12 @@ public:
   afx_msg void OnBnClickedCancel();
   afx_msg void OnEnSetfocusEdit8();
   afx_msg void OnEnSetfocusEdit9();
+  CEdit AutoStepT;
+  CEdit NumberT;
+  CEdit prefix2T;
+  afx_msg void IncrementNumber();
+  afx_msg void DecrementNumber();
+  CButton AutoStepEnabled;
+  afx_msg void OnEnChangeNumber();
+  afx_msg void OnBnClickedCheck2();
 };

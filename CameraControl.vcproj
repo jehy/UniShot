@@ -428,6 +428,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\hotkey.h"
+					>
+				</File>
+				<File
 					RelativePath=".\common\mvector.h"
 					>
 				</File>
@@ -535,6 +539,10 @@
 				</File>
 				<File
 					RelativePath=".\common\common_funcs.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\hotkey.cpp"
 					>
 				</File>
 				<File

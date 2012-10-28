@@ -48,7 +48,6 @@ BEGIN_MESSAGE_MAP(CLifeViewDlg, CDialog)
   ON_WM_SIZE()
   ON_WM_LBUTTONDOWN()
   ON_WM_RBUTTONDOWN()
-  //ON_WM_SHOWWINDOW()
 END_MESSAGE_MAP()
 
 // LifeViewDlg message handlers
@@ -100,11 +99,6 @@ void CLifeViewDlg::OnSize(UINT nType, int cx, int cy)
 
 void CLifeViewDlg::OnRButtonDown(UINT nFlags, CPoint point)
 {
-  this->Control->OnBnClickedButton26();//focus
-}
-
-void CLifeViewDlg::OnLButtonDown(UINT nFlags, CPoint point)
-{
   //MouseState=1;
   //FromPoint=point;
 
@@ -135,9 +129,12 @@ void CLifeViewDlg::OnLButtonDown(UINT nFlags, CPoint point)
 
   
   if(this->Control->evfAFOff==1)
-    this->Control->OnBnClickedButton27();
+    this->Control->FocusPhoto();
+}
 
-  CDialog::OnLButtonDown(nFlags, point);
+void CLifeViewDlg::OnLButtonDown(UINT nFlags, CPoint point)
+{
+  this->Control->Shoot();
 }
 
 
@@ -147,7 +144,5 @@ void CLifeViewDlg::OnShowWindow(BOOL bShow, UINT nStatus)
   if(bShow==1)
     this->OnSize(0,500,500);
   CDialog::OnShowWindow(bShow, nStatus);
-
-  // TODO: Add your message handler code here
 }
 */

@@ -18,6 +18,6 @@ public:
 	char* GetTextContents();
 	char* Save2(xml* parent, int offset);
 	int parse2 (CString subtext, CString MyTag,int offset, xml* parent, XmlItems* vec);
-	//xml* ItemParam(xml* item, char* name);
-//	xml** GetChildren(xml* parent);
+  int GetItemChildCount(xml* parent);
+  xml* GetItemChild(xml* parent,int num);
 };

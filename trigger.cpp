@@ -48,3 +48,45 @@ int trigger::run(HANDLE SomeInfo)
   }
   return 1;
 }
+
+
+void Triggers::clear()
+{
+  for(int i=0;i<vec.size();i++)
+    delete(vec[i]);
+  vec.clear();
+}
+trigger* Triggers::GetAt(int p)
+{
+  if(p>=this->vec.size())
+    MessageBox(NULL,"Trigger index out of borders","Error",MB_OK);
+  return vec.at(p);
+}
+int Triggers::Count()
+{
+  return this->vec.size();
+}
+
+
+void Triggers::Add(trigger* tr)
+{
+  this->vec.push_back(tr);
+}
+
+
+trigger* Triggers::Find(char* name)
+{
+  for(int i=0;i<vec.size();i++)
+    if(!strcmp(name,vec.at(i)->name))
+      return vec.at(i);
+  return NULL;
+}
+
+Triggers::Triggers(void)
+{
+}
+
+Triggers::~Triggers(void)
+{
+  clear();
+}

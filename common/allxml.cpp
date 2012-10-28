@@ -26,9 +26,6 @@ char* AllXml::Save2(xml* parent, int offset)
 	{
 		if(this->vec[i]->parent==parent)
 		{
-			//CString fuck;
-			//fuck.Format("child of %s is equal to %s",parent->name,MenuXml.vec[i]->name);
-			//MessageBox(NULL,fuck,"",MB_OK);
 			found=1;
 			char* NewC=Save2(this->vec[i],offset+1);
 			NewContents.Append(NewC);
@@ -56,11 +53,8 @@ char* AllXml::Save2(xml* parent, int offset)
 			FileContents.Append("\n");
 	
 	}
-	//file_put_contents(filename,);
 	char* contents=new char[FileContents.GetLength()+1];
 	strcpy_s(contents,FileContents.GetLength()+1,FileContents);
-	//FileContents.ReleaseBuffer();
-	//NewContents.ReleaseBuffer();
 	return contents;
 }
 int AllXml::parse2 (CString subtext, CString MyTag,int offset, xml* parent, XmlItems* vec)
@@ -134,6 +128,29 @@ void AllXml::Parse (CString text, CString MainTag)
 	parse2(text, MainTag,(pos+MainTag1.GetLength()),main,&vec);
 }
 
+int AllXml::GetItemChildCount(xml* parent)
+{
+  int count=0;
+	for(int i=0;i<vec.size();i++)
+	  if((vec[i]->parent!=NULL)&&(vec[i]!=NULL))
+		  if(vec[i]->parent==parent)
+        count++;
+  return count;
+}
+
+xml* AllXml::GetItemChild(xml* parent,int num)
+{
+  int count=0;
+	for(int i=0;i<vec.size();i++)
+	  if((vec[i]->parent!=NULL)&&(vec[i]!=NULL))
+		  if(vec[i]->parent==parent)
+      {
+        if(num==count)
+          return vec[i];
+        count++;
+      }
+  return NULL;
+}
 
 xml* AllXml::GetItemOnlyChild(xml* parent, char* name,bool necc)
 {

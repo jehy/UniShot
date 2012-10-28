@@ -28,6 +28,10 @@
 #define new DEBUG_NEW
 #endif
 
+#define ENABLE_OFFLINE_MODE 1
+bool mode_offline=0;
+//#define ENABLE_OFFLINE_MODE 0
+
 
 CameraModel* cameraModelFactory(EdsCameraRef camera, EdsDeviceInfo deviceInfo);
 
@@ -128,42 +132,45 @@ BOOL CCameraControlApp::InitInstance()
 	if(err != EDS_ERR_OK)
 	{
     ::MessageBox(NULL,"Ошибка: подключённой камеры не обнаружено!",NULL,MB_OK);
+    mode_offline=1;
 	}
 
-	if(err == EDS_ERR_OK )
+	if(err == EDS_ERR_OK || ENABLE_OFFLINE_MODE)
 	{
 		//Create CameraController
 		_controller = new CameraController();
 		//Create View Dialog
 		CCameraControlDlg			view;
 		
-		_controller->setCameraModel(_model);
-		_model->addObserver(&view);
-		// Send Model Event to view	
-		view.setCameraController(_controller);
+    if(!mode_offline)
+    {
+		  _controller->setCameraModel(_model);
+		  _model->addObserver(&view);
+		  // Send Model Event to view	
+		  view.setCameraController(_controller);
 
-		//Set Property Event Handler
-		if(err == EDS_ERR_OK)
-		{
-			err = EdsSetPropertyEventHandler( camera, kEdsPropertyEvent_All, CameraEventListener::handlePropertyEvent , (EdsVoid *)_controller);
-		}
+		  //Set Property Event Handler
+		  if(err == EDS_ERR_OK)
+		  {
+			  err = EdsSetPropertyEventHandler( camera, kEdsPropertyEvent_All, CameraEventListener::handlePropertyEvent , (EdsVoid *)_controller);
+		  }
 
-		//Set Object Event Handler
-		if(err == EDS_ERR_OK)
-		{
-			err = EdsSetObjectEventHandler( camera, kEdsObjectEvent_All, CameraEventListener::handleObjectEvent , (EdsVoid *)_controller);
-		}
+		  //Set Object Event Handler
+		  if(err == EDS_ERR_OK)
+		  {
+			  err = EdsSetObjectEventHandler( camera, kEdsObjectEvent_All, CameraEventListener::handleObjectEvent , (EdsVoid *)_controller);
+		  }
 
-		//Set State Event Handler
-		if(err == EDS_ERR_OK)
-		{
-			err = EdsSetCameraStateEventHandler( camera, kEdsStateEvent_All, CameraEventListener::handleStateEvent , (EdsVoid *)_controller);
-		}
-
+		  //Set State Event Handler
+		  if(err == EDS_ERR_OK)
+		  {
+			  err = EdsSetCameraStateEventHandler( camera, kEdsStateEvent_All, CameraEventListener::handleStateEvent , (EdsVoid *)_controller);
+		  }
+    }
 		m_pMainWnd = &view;
 		INT_PTR nResponse = view.DoModal();
 
-	}
+  }
 
 	//Release Camera
 	if( camera != NULL )

@@ -1,38 +1,10 @@
-/******************************************************************************
-*                                                                             *
-*   PROJECT : EOS Digital Software Development Kit EDSDK                      *
-*      NAME : CameraControlDlg.cpp                                            *
-*                                                                             *
-*   Description: This is the Sample code to show the usage of EDSDK.          *
-*                                                                             *
-*                                                                             *
-*******************************************************************************
-*                                                                             *
-*   Written and developed by Camera Design Dept.53                            *
-*   Copyright Canon Inc. 2006-2008 All Rights Reserved                        *
-*                                                                             *
-*******************************************************************************/
-
 #include "stdafx.h"
-#include <map>
-
 #include "CameraControl.h"
 #include "CameraControlDlg.h"
-#include ".\CameraControldlg.h"
-
-#include "EDSDK.h"
-#include "EDSDKTypes.h"
-
-
-#include "common\xml.h"
-#include "common\mvector.h"
-#include "common\allxml.h"
-#include "common\common_funcs.h"
 #include "CLifeViewDlg.h"
-#include <shlobj.h>
 
-#include "trigger.h"
-
+Hotkeys hotkeys;
+Triggers triggers;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -41,10 +13,40 @@
 
 #define WM_USER_DOWNLOAD_COMPLETE		WM_APP+1
 #define WM_USER_PROGRESS_REPORT			WM_APP+2
+extern bool mode_offline; 
 
 CString PhotoSavePath;
 // CCameraControlDlg 
 CLifeViewDlg* LifeViewDlg=NULL;
+
+BOOL CCameraControlDlg::PreTranslateMessage(MSG* pMsg) 
+{
+  //catch hotkeys
+  if(pMsg->message==WM_KEYDOWN)
+  {
+    //CString x;
+    //x.Format("%d",pMsg->wParam);
+    //MessageBox(x);
+    hotkey* h=hotkeys.Find(pMsg->wParam);
+    if(h!=NULL)
+      RunAction(h->action);
+  }
+  return CDialog::PreTranslateMessage(pMsg);
+}
+
+void CCameraControlDlg::RunAction(char* action)
+{
+  if(strcmp(action,"Shoot")==0)
+    this->Shoot();
+  else if(strcmp(action,"Focus")==0)
+    this->FocusPhoto();
+  else if(strcmp(action,"NextTab")==0)
+    this->SetNextFocus();
+  else if(strcmp(action,"IncrementNumber")==0)
+    this->IncrementNumber();
+  else if(strcmp(action,"DecrementNumber")==0)
+    this->DecrementNumber();
+}
 
 CCameraControlDlg::CCameraControlDlg(CWnd* pParent )
 	: CDialog(CCameraControlDlg::IDD, pParent)
@@ -54,7 +56,6 @@ CCameraControlDlg::CCameraControlDlg(CWnd* pParent )
   LifeViewDlg->Create(IDD_DIALOG1,NULL);
   LifeViewDlg->SetControl(this);
   evfAFOff=1;
-  OnShoot=NULL;
 }
 
 void CCameraControlDlg::DoDataExchange(CDataExchange* pDX)
@@ -63,7 +64,6 @@ void CCameraControlDlg::DoDataExchange(CDataExchange* pDX)
 
   DDX_Control(pDX, IDC_BUTTON1, _btnTakePicture);
   DDX_Control(pDX, IDC_PROGRESS1, _progress);
-  //DDX_Control(pDX, IDC_EDIT1, _edit);
   DDX_Control(pDX, IDC_COMBO1, _comboAEMode);
   DDX_Control(pDX, IDC_COMBO2, _comboTv);
   DDX_Control(pDX, IDC_COMBO3, _comboAv);
@@ -100,11 +100,14 @@ void CCameraControlDlg::DoDataExchange(CDataExchange* pDX)
   DDX_Control(pDX, IDC_EDIT1, prefix);
   DDX_Control(pDX, IDC_EDIT5, current_page);
   DDX_Control(pDX, IDC_EDIT6, number_signs);
-  //	DDX_Control(pDX, IDC_EDIT7, state);
   DDX_Control(pDX, IDC_EDIT7, _edit);
   DDX_Control(pDX, IDC_BUTTON27, focusbtn);
   DDX_Control(pDX, IDC_EDIT8, PictureWidthT);
   DDX_Control(pDX, IDC_EDIT9, PictureHeightT);
+  DDX_Control(pDX, IDC_EDIT10, AutoStepT);
+  DDX_Control(pDX, IDC_EDIT11, NumberT);
+  DDX_Control(pDX, IDC_EDIT12, prefix2T);
+  DDX_Control(pDX, IDC_CHECK2, AutoStepEnabled);
 }
 
 BEGIN_MESSAGE_MAP(CCameraControlDlg, CDialog)
@@ -118,47 +121,27 @@ BEGIN_MESSAGE_MAP(CCameraControlDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON19, &CCameraControlDlg::OnBnClickedButton19)
 	ON_BN_CLICKED(IDC_BUTTON23, &CCameraControlDlg::OnBnClickedButton23)
 	ON_WM_CREATE()
-	ON_BN_CLICKED(IDC_BUTTON24, &CCameraControlDlg::OnBnClickedButton24)
-//	ON_BN_CLICKED(IDC_BUTTON1, &CCameraControlDlg::OnBnClickedButton1)
-	ON_BN_CLICKED(IDC_BUTTON26, &CCameraControlDlg::OnBnClickedButton26)
-	//ON_BN_CLICKED(IDC_BUTTON27, &CCameraControlDlg::OnBnClickedButton27)
-//  ON_BN_CLICKED(IDC_BUTTON22, &CCameraControlDlg::OnBnClickedButton22)
-//ON_WM_SIZE()
-//ON_BN_CLICKED(IDC_BUTTON21, &CCameraControlDlg::OnBnClickedButton21)
-ON_BN_CLICKED(IDC_BUTTON27, &CCameraControlDlg::OnBnClickedButton27)
-ON_BN_CLICKED(IDC_BUTTON28, &CCameraControlDlg::OnBnClickedButton28)
+	ON_BN_CLICKED(IDC_BUTTON24, &CCameraControlDlg::SelectFileDir)
+	ON_BN_CLICKED(IDC_BUTTON26, &CCameraControlDlg::Shoot)
+ON_BN_CLICKED(IDC_BUTTON27, &CCameraControlDlg::FocusPhoto)
+ON_BN_CLICKED(IDC_BUTTON28, &CCameraControlDlg::OpenFileDir)
 ON_EN_CHANGE(IDC_EDIT1, &CCameraControlDlg::OnEnChangeEdit1)
 ON_EN_SETFOCUS(IDC_EDIT8, &CCameraControlDlg::OnEnSetfocusEdit8)
 ON_EN_SETFOCUS(IDC_EDIT9, &CCameraControlDlg::OnEnSetfocusEdit9)
+ON_BN_CLICKED(IDC_BUTTON30, &CCameraControlDlg::IncrementNumber)
+ON_BN_CLICKED(IDC_BUTTON29, &CCameraControlDlg::DecrementNumber)
+ON_EN_CHANGE(IDC_EDIT11, &CCameraControlDlg::OnEnChangeNumber)
+ON_BN_CLICKED(IDC_CHECK2, &CCameraControlDlg::OnBnClickedCheck2)
 END_MESSAGE_MAP()
 
 
 // CCameraControlDlg message handlers
 
-void SetDropDownHeight(CComboBox* pMyComboBox, int itemsToShow)
-{
-  //Get rectangles
-  CRect rctComboBox, rctDropDown;
-  pMyComboBox->GetClientRect(&rctComboBox); //Combo rect
-  pMyComboBox->GetDroppedControlRect(&rctDropDown); //DropDownList rect
-
-  int itemHeight = pMyComboBox->GetItemHeight(-1); //Get Item height
-
-  pMyComboBox->GetParent()->ScreenToClient(&rctDropDown); //Converts coordinates
-  rctDropDown.bottom = rctDropDown.top + rctComboBox.Height() + itemHeight*itemsToShow; //Set height
-  pMyComboBox->MoveWindow(&rctDropDown); //enable changes
-}
 
 BOOL CCameraControlDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-	setupListener(_controller);
-	setupObserver(getCameraModel());
-  LifeViewDlg->setCameraController(this->_controller);
-
-	//Execute controller
-	_controller->run();
 
 	// A set value of the camera is acquired. 
 	// The value to which the camera can be set is acquired.
@@ -176,15 +159,34 @@ BOOL CCameraControlDlg::OnInitDialog()
 	//this->InitPhotoSett();
 
   //move to left size of the screen
-  this->MoveWindow(20,20,380,680,1);
+  this->MoveWindow(20,20,380,800,1);
 
   //move invisible lifeview window to edge
   LifeViewDlg->MoveWindow(20+380+5,20,500,500,1);
 
   //auto define aspect ratio for currect photo device
   //LifeViewDlg->OnSize(0,500,500);
+
+  
+  SetBigFont(&prefix);
+  SetBigFont(&NumberT);
+  SetBigFont(&prefix2T);
+  SetBigFont(&current_page);
+  SetBigFont(&PictureWidthT);
+  SetBigFont(&PictureHeightT);
+
+  if(!mode_offline)
+  {
+	  setupListener(_controller);
+	  setupObserver(getCameraModel());
+    LifeViewDlg->setCameraController(this->_controller);
+
+	  //Execute controller
+	  _controller->run();
+  }
 	return TRUE;
 }
+
 
 void CCameraControlDlg::setupListener(ActionListener* listener)
 {
@@ -269,7 +271,15 @@ void CCameraControlDlg::setupObserver(Observable* ob)
 
 void CCameraControlDlg::OnBnClickedOk()
 {
-  //OnOK();
+  //SetNextFocus();
+  //this means, "enter" button was pressed
+}
+
+void CCameraControlDlg::SetNextFocus()
+{
+  //navigate like "tab" key
+   ::keybd_event(VK_TAB,MapVirtualKey(VK_TAB,0),0,0);
+   ::keybd_event(VK_TAB,MapVirtualKey(VK_TAB,0),KEYEVENTF_KEYUP,0);
 }
 
 void CCameraControlDlg::OnBnClickedCancel()
@@ -283,6 +293,8 @@ void CCameraControlDlg::OnClose()
   if(z==IDYES)
     OnBnClickedButton23();
 
+  triggers.clear();
+  hotkeys.clear();
 	fireEvent("closing");
 	Lifeview.EnableWindow(FALSE);
 	_btnTakePicture.EnableWindow(FALSE);	
@@ -303,15 +315,13 @@ void CCameraControlDlg::OnClose()
   LifeViewDlg->CloseWindow();
   LifeViewDlg->DestroyWindow();
   delete(LifeViewDlg);
-  if(OnShoot!=NULL)
-    delete(OnShoot);
-	__super::OnClose();
+	//CWnd::OnClose();
+  this->DestroyWindow();
+  //exit(0);
 }
 
 void CCameraControlDlg::CheckFocusEnabled(Observable* from, CameraEvent *e)
 {
-
-
 
   if(e->getArg()==NULL)
   {
@@ -324,19 +334,13 @@ void CCameraControlDlg::CheckFocusEnabled(Observable* from, CameraEvent *e)
   {
     return;
   }
-
-
 		EdsDataType	dataType = kEdsDataType_Unknown;
 		EdsUInt32   dataSize = 0;
-
-    
 		EdsError	err = EdsGetPropertySize(_model->getCameraObject(),
         propertyID,0,&dataType,&dataSize );
       
 		if(err == EDS_ERR_OK)
 		{
-      
-
 			if(dataType == kEdsDataType_FocusInfo)
       {
         
@@ -373,9 +377,7 @@ void CCameraControlDlg::CheckFocusEnabled(Observable* from, CameraEvent *e)
         //MessageBox(NULL,"not focused",MB_OK);
       }
     }
-    
-  
-    return;
+return;
 }
 
 
@@ -410,7 +412,8 @@ void CCameraControlDlg::update(Observable* from, CameraEvent *e)
 LRESULT CCameraControlDlg::OnDownloadComplete(WPARAM wParam, LPARAM lParam)
 {
   CString data="";
-  AppendFormatedFileName(&data,"%projectdir%filedir %prefix%number");
+  //AppendFormatedFileName(&data,"%projectdir%filedir %prefix%number");
+  AppendFormatedFileName(&data,"%projectdir%filedir %prefix%number%prefix2%counter");
   
   /*
   tmp.Format(" %d %d",LifeViewDlg->_pictureBox.data.sizeJpegLarge.width,LifeViewDlg->_pictureBox.data.sizeJpegLarge.height);
@@ -442,15 +445,19 @@ LRESULT CCameraControlDlg::OnDownloadComplete(WPARAM wParam, LPARAM lParam)
 
 	
 	//increment curent page
-	CString temp2;
-	current_page.GetWindowTextA(temp2);
-	int p=atoi(temp2.GetBuffer());
-	p++;
-	char buffer[10];
-	_itoa_s(p,buffer,10,10);
-	current_page.SetWindowTextA(buffer);
-  shootbtn.EnableWindow(1);
-  shootbtn.SetFocus();
+  if(AutoStepEnabled.GetCheck())
+  {
+	  current_page.GetWindowTextA(tmp);
+	  int p=atoi(tmp.GetBuffer());
+
+    CString tmp2;
+    AutoStepT.GetWindowTextA(tmp2);
+    p+=atoi(tmp2);
+    tmp.Format("%d",p);
+	  current_page.SetWindowTextA(tmp);
+    shootbtn.EnableWindow(1);
+    shootbtn.SetFocus();
+  }
 
 	return 0;
 }
@@ -463,6 +470,7 @@ LRESULT CCameraControlDlg::OnProgressReport(WPARAM wParam, LPARAM lParam)
 
 void CCameraControlDlg::OnBnClickedCheck1()
 {
+  //enable / disable lifeview
 	if(Lifeview.GetCheck())
   {
 	  fireEvent("startEVF");
@@ -477,7 +485,7 @@ void CCameraControlDlg::OnBnClickedCheck1()
 
 void CCameraControlDlg::OnBnClickedButton19()
 {
-	
+	//load settings
 	CFileDialog dlg(TRUE/*Open=TRUE Save=False*/,NULL/*Filename Extension*/,""/*Initial Filename*/,OFN_ENABLESIZING|OFN_EXPLORER|OFN_FILEMUSTEXIST/*Flags*/,"XML(*.xml)|*.xml||"/*Filetype Filter*/,this/*parent Window*/);
 	if (dlg.DoModal() == IDOK)
 	{
@@ -488,7 +496,7 @@ void CCameraControlDlg::OnBnClickedButton19()
 }
 
 void CCameraControlDlg::OnBnClickedButton23()
-{
+{//save settings file
 	
 	CFileDialog dlg(FALSE/*Open=TRUE Save=False*/,NULL/*Filename Extension*/,"settings.xml"/*Initial Filename*/,OFN_ENABLESIZING|OFN_EXPLORER|OFN_FILEMUSTEXIST/*Flags*/,"XML(*.xml)|*.xml||"/*Filetype Filter*/,this/*parent Window*/);
 	if (dlg.DoModal() == IDOK)
@@ -505,6 +513,8 @@ void CCameraControlDlg::OnBnClickedButton23()
 
 void CCameraControlDlg::InitPhotoSett()
 {
+  triggers.clear();
+  hotkeys.clear();
 	CString path;
 	settings_file.GetWindowTextA(path);
 	char* f=file_get_contents(path.GetBuffer(),0);
@@ -514,46 +524,64 @@ void CCameraControlDlg::InitPhotoSett()
 		return;
 	}
 	
-		
-	AllXml* xmlvec=new(AllXml);
+	AllXml* xmlvec=new AllXml();
 	xmlvec->Parse(f,"xml");
-	delete(f);
+	delete[]f;
 	xml* child=xmlvec->GetItemOnlyChild(xmlvec->MainElement,"xml",1);
-  
-  xml* triggers=xmlvec->GetItemOnlyChild(child,"triggers",0);
-  if(triggers!=NULL)
+  xml* trig=xmlvec->GetItemOnlyChild(child,"triggers",0);
+  if(trig!=NULL)
   {
-    xml* ShootTrigger=xmlvec->GetItemOnlyChild(triggers,"OnShoot",0);
-    if(ShootTrigger!=NULL)
+    int c=xmlvec->GetItemChildCount(trig);
+    for(int i=0;i<c;i++)
     {
-      this->OnShoot=new trigger();
-      xml* prop=xmlvec->GetItemOnlyChild(ShootTrigger,"type",1);
-      OnShoot->type=atoi(prop->subtext);
-      //prop=xmlvec->GetItemOnlyChild(ShootTrigger,"name",1);
-      //OnShoot->name=new char[strlen(prop->subtext)];
-      //strcpy_s(OnShoot->name,strlen(prop->subtext),prop->subtext);
-      prop=xmlvec->GetItemOnlyChild(ShootTrigger,"action",1);
-      OnShoot->action=new char[strlen(prop->subtext)+1];
-      strcpy_s(OnShoot->action,strlen(prop->subtext)+1,prop->subtext);
+      xml* tr=xmlvec->GetItemChild(trig,i);
+      xml* name=xmlvec->GetItemOnlyChild(tr,"name",1);
+      xml* type=xmlvec->GetItemOnlyChild(tr,"type",1);
+      xml* action=xmlvec->GetItemOnlyChild(tr,"action",1);
+      trigger* NewTrigger=new trigger();
+      NewTrigger->action=new char[strlen(action->subtext)+1];
+      NewTrigger->name=new char[strlen(name->subtext)+1];
+      strcpy_s(NewTrigger->action,strlen(action->subtext)+1,action->subtext);
+      strcpy_s(NewTrigger->name,strlen(name->subtext)+1,name->subtext);
+      NewTrigger->type=atoi(type->subtext);
+      triggers.Add(NewTrigger);
+    }
+  }
+
+
+  xml* hotk=xmlvec->GetItemOnlyChild(child,"hotkeys",0);
+  if(hotk!=NULL)
+  {
+    int c=xmlvec->GetItemChildCount(hotk);
+    for(int i=0;i<c;i++)
+    {
+      xml* h=xmlvec->GetItemChild(hotk,i);
+      xml* KeyCode=xmlvec->GetItemOnlyChild(h,"keycode",1);
+      xml* action=xmlvec->GetItemOnlyChild(h,"action",1);
+      hotkey* NewHotkey=new hotkey();
+      NewHotkey->action=new char[strlen(action->subtext)+1];
+      strcpy_s(NewHotkey->action,strlen(action->subtext)+1,action->subtext);
+      NewHotkey->KeyCode=atoi(KeyCode->subtext);
+      hotkeys.Add(NewHotkey);
     }
   }
 
 	child=xmlvec->GetItemOnlyChild(child,"settings",1);
 	
 	//Loading to select lists
-  this->SetComboSett(&_comboAEMode,xmlvec->GetItemOnlyChild(child,"_comboAEMode",0)->subtext);
-  this->SetComboSett(&_comboTv,xmlvec->GetItemOnlyChild(child,"_comboTv",0)->subtext);
-  this->SetComboSett(&_comboAv,xmlvec->GetItemOnlyChild(child,"_comboAv",0)->subtext);
-  this->SetComboSett(&_comboIso,xmlvec->GetItemOnlyChild(child,"_comboIso",0)->subtext);
-  this->SetComboSett(&_comboMeteringMode,xmlvec->GetItemOnlyChild(child,"_comboMeteringMode",0)->subtext);
-  this->SetComboSett(&_comboExposureComp,xmlvec->GetItemOnlyChild(child,"_comboExposureComp",0)->subtext);
-  this->SetComboSett(&_comboEvfAFMode,xmlvec->GetItemOnlyChild(child,"_comboEvfAFMode",0)->subtext);
-  this->SetComboSett(&_comboImageQuality,xmlvec->GetItemOnlyChild(child,"_comboImageQuality",0)->subtext);
+  SetComboSett(&_comboAEMode,xmlvec->GetItemOnlyChild(child,"_comboAEMode",0)->subtext);
+  SetComboSett(&_comboTv,xmlvec->GetItemOnlyChild(child,"_comboTv",0)->subtext);
+  SetComboSett(&_comboAv,xmlvec->GetItemOnlyChild(child,"_comboAv",0)->subtext);
+  SetComboSett(&_comboIso,xmlvec->GetItemOnlyChild(child,"_comboIso",0)->subtext);
+  SetComboSett(&_comboMeteringMode,xmlvec->GetItemOnlyChild(child,"_comboMeteringMode",0)->subtext);
+  SetComboSett(&_comboExposureComp,xmlvec->GetItemOnlyChild(child,"_comboExposureComp",0)->subtext);
+  SetComboSett(&_comboEvfAFMode,xmlvec->GetItemOnlyChild(child,"_comboEvfAFMode",0)->subtext);
+  SetComboSett(&_comboImageQuality,xmlvec->GetItemOnlyChild(child,"_comboImageQuality",0)->subtext);
 
 	Lifeview.SetCheck(atoi(xmlvec->GetItemOnlyChild(child,"Lifeview",0)->subtext));
 
 //set drive if mapped
-  this->SetComboSett(&drivebox,xmlvec->GetItemOnlyChild(child,"drivebox",0)->subtext);
+  SetComboSett(&drivebox,xmlvec->GetItemOnlyChild(child,"drivebox",0)->subtext);
 
 	//set text values
 	filedir.SetWindowTextA(xmlvec->GetItemOnlyChild(child,"filedir",0)->subtext);
@@ -575,23 +603,12 @@ void CCameraControlDlg::InitPhotoSett()
 	this->OnBnClickedCheck1();//enable or disable lifeview, according to options loaded
 	
 	
-/*	_comboAEMode.OnSelChange();
-	_comboTv.OnSelChange();
-	_comboAv.OnSelChange();
-	_comboIso.OnSelChange();
-	_comboMeteringMode.OnSelChange();
-	_comboExposureComp.OnSelChange();
-	_comboImageQuality.OnSelChange();
-	_comboEvfAFMode.OnSelChange();*/
-
-	//MessageBox("settings ok");
-
 }
 void CCameraControlDlg::InitProgramSett()
 {
 	char* z=GetApplicationDir();
 	CString AppPath=z;
-	delete(z);
+	delete []z;
 	CString SettPath;
 	SettPath=AppPath;
 	SettPath.Append("program_sett.xml");
@@ -610,7 +627,7 @@ void CCameraControlDlg::InitProgramSett()
 	}
 	AllXml* xmlvec=new(AllXml);
 	xmlvec->Parse(f,"xml");
-	delete(f);
+	delete[] f;
 	xml* child=xmlvec->GetItemOnlyChild(xmlvec->MainElement,"xml",1);
 	child=xmlvec->GetItemOnlyChild(child,"program",1);
 	child=xmlvec->GetItemOnlyChild(child,"DefaultSettFile",1);
@@ -619,38 +636,32 @@ void CCameraControlDlg::InitProgramSett()
 	delete(xmlvec);
 }
 
-void CCameraControlDlg::SetComboSett(CComboBox* combo,char* val)
-{
-  CString tmp;
-  for(int i=0;i<combo->GetCount();i++)
-  {
-    combo->GetLBText(i,tmp);
-    if(!strcmp(tmp.GetBuffer(),val))
-      combo->SetCurSel(i);
-  }
-}
 
 
-void CCameraControlDlg::GetComboSett(CComboBox* combo,char*name,CString* SettText)
-{
-  CString temp;
-  combo->GetWindowText(temp);
-  SettText->Append("<");
-  SettText->Append(name);
-  SettText->Append(">");
-  SettText->Append(temp);
-  SettText->Append("</");
-  SettText->Append(name);
-  SettText->Append(">");
-}
 
 void CCameraControlDlg::SavePhotoSett(char* path)
 {
 	//update photo settings
 	CString SettText;
-	CString temp;
-	SettText="<xml><settings>";
+	SettText="<xml>";
+	CString temp="";
+  SettText.Append("<hotkeys>");
+  for(int i=0;i<hotkeys.Count();i++)
+  {
+    temp.Format("<hotkey><action>%s</action><keycode>%d</keycode></hotkey>",hotkeys.GetAt(i)->action,hotkeys.GetAt(i)->KeyCode);
+    SettText.Append(temp);
+  }  
+  SettText.Append("</hotkeys>");
   
+  SettText.Append("<triggers>");
+  for(int i=0;i<triggers.Count();i++)
+  {
+    temp.Format("<trigger><action>%s</action><name>%s</name><type>%d</type></trigger>",triggers.GetAt(i)->action,triggers.GetAt(i)->name,triggers.GetAt(i)->type);
+    SettText.Append(temp);
+  }  
+  SettText.Append("</triggers>");
+
+  SettText.Append("<settings>");
   GetComboSett(&_comboAEMode,"_comboAEMode",&SettText);
   GetComboSett(&_comboTv,"_comboTv",&SettText);
   GetComboSett(&_comboAv,"_comboAv",&SettText);
@@ -701,30 +712,10 @@ void CCameraControlDlg::SavePhotoSett(char* path)
 	file_put_contents(z.GetBuffer(),SettText.GetBuffer());
 }
 
-int CALLBACK BrowseForFolderCallback(HWND hwnd,UINT uMsg,LPARAM lp, LPARAM pData)
-{
-	char szPath[MAX_PATH];
-
-	switch(uMsg)
-	{
-		case BFFM_INITIALIZED:
-			SendMessage(hwnd, BFFM_SETSELECTION, TRUE, pData);
-			break;
-
-		case BFFM_SELCHANGED: 
-			if (SHGetPathFromIDList((LPITEMIDLIST) lp ,szPath)) 
-			{
-				SendMessage(hwnd, BFFM_SETSTATUSTEXT,0,(LPARAM)szPath);	
-
-			}
-			break;
-	}
-
-	return 0;
-}
 
 
-void CCameraControlDlg::OnBnClickedButton24()
+
+void CCameraControlDlg::SelectFileDir()
 {
 	if(drivebox.GetCurSel()==-1)
 	{
@@ -781,10 +772,6 @@ void CCameraControlDlg::OnBnClickedButton24()
   }
 }
 
-//void CCameraControlDlg::OnBnClickedButton1()
-//{
-//	
-//}
 
 void CCameraControlDlg::AppendFormatedFileName(CString* to, char* format)
 {
@@ -799,11 +786,17 @@ void CCameraControlDlg::AppendFormatedFileName(CString* to, char* format)
 	  AppendFileNamePart(&tmp2,"filedir");
     tmp.Replace("%filedir",tmp2);
     tmp2="";
+	  AppendFileNamePart(&tmp2,"prefix2");
+    tmp.Replace("%prefix2",tmp2);
+    tmp2="";
 	  AppendFileNamePart(&tmp2,"prefix");
     tmp.Replace("%prefix",tmp2);
     tmp2="";
 	  AppendFileNamePart(&tmp2,"number");
     tmp.Replace("%number",tmp2);
+    tmp2="";
+	  AppendFileNamePart(&tmp2,"counter");
+    tmp.Replace("%counter",tmp2);
     tmp2="";
 	  AppendFileNamePart(&tmp2,"ext");
     tmp.Replace("%ext",tmp2);
@@ -842,12 +835,14 @@ void CCameraControlDlg::AppendFileNamePart(CString * to,char* mode)
   else if(!strcmp(mode,"prefix"))
 	{
 		prefix.GetWindowTextA(temp);
-		if(temp.GetLength())
-		{
-			to->Append(temp);
-		}
+		to->Append(temp);
   }
-  else if(!strcmp(mode,"number"))
+  else if(!strcmp(mode,"prefix2"))
+	{
+		prefix2T.GetWindowTextA(temp);
+		to->Append(temp);
+  }
+  else if(!strcmp(mode,"counter"))
   {
 		current_page.GetWindowTextA(temp);
 		if(temp.GetLength())
@@ -859,6 +854,11 @@ void CCameraControlDlg::AppendFileNamePart(CString * to,char* mode)
 				temp.Insert(0,'0');
 			to->Append(temp);
 		}
+  }
+  else if(!strcmp(mode,"number"))
+  {
+		NumberT.GetWindowTextA(temp);
+		to->Append(temp);
 	}
   else if(!strcmp(mode,"ext"))
   {
@@ -874,7 +874,7 @@ void CCameraControlDlg::AppendFileNamePart(CString * to,char* mode)
 }
 
 
-void CCameraControlDlg::OnBnClickedButton26()
+void CCameraControlDlg::Shoot()
 {
 	
 	CString test;
@@ -886,9 +886,6 @@ void CCameraControlDlg::OnBnClickedButton26()
 	}
 	
   CString dir;
-	/*AppendFileNamePart(&dir,"drive");
-	AppendFileNamePart(&dir,"projectdir");
-	AppendFileNamePart(&dir,"filedir");*/
   AppendFormatedFileName(&dir,"%drive%projectdir%filedir");
 	
   if(!DirectoryExists(dir.GetBuffer()))
@@ -913,13 +910,11 @@ void CCameraControlDlg::OnBnClickedButton26()
 		}
 	}
 	CString fname;
-  AppendFormatedFileName(&fname,"%drive%projectdir%filedir%prefix%number%ext");/*
-	AppendFileNamePart(&fname,"drive");
-	AppendFileNamePart(&fname,"projectdir");
-	AppendFileNamePart(&fname,"filedir");
-	AppendFileNamePart(&fname,"prefix");
-	AppendFileNamePart(&fname,"number");
-	AppendFileNamePart(&fname,"ext");*/
+  if(AutoStepEnabled.GetCheck())
+    AppendFormatedFileName(&fname,"%drive%projectdir%filedir%prefix%number%prefix2%counter%ext");
+  else
+    AppendFormatedFileName(&fname,"%drive%projectdir%filedir%prefix%number%ext");
+  filedir.SetFocus();
 
 	if(FileExists(fname.GetBuffer()))
 	{
@@ -928,52 +923,27 @@ void CCameraControlDlg::OnBnClickedButton26()
 			return;
 	}
   PhotoSavePath="";//save here
-  AppendFormatedFileName(&PhotoSavePath,"%drive%projectdir%filedir%prefix%number");//without ext
+  if(AutoStepEnabled.GetCheck())
+    AppendFormatedFileName(&PhotoSavePath,"%drive%projectdir%filedir%prefix%number%prefix2%counter");//without ext
+  else
+    AppendFormatedFileName(&PhotoSavePath,"%drive%projectdir%filedir%prefix%number");//without ext
   shootbtn.EnableWindow(0);
 	fireEvent("TakePicture");
   return;//trigger in beta mode
-  if(OnShoot!=NULL)
+
+  trigger* tr=triggers.Find("OnShoot");
+  if(tr!=NULL)
   {
     CString tmp;
-    tmp=OnShoot->action;
-    this->AppendFormatedFileName(&tmp,OnShoot->action);//"%drive%projectdir%filedir%prefix%number%ext");
-    /*
-	  AppendFileNamePart(&tmp2,"drive");
-    tmp.Replace("%drive",tmp2);
-    tmp2="";
-	  AppendFileNamePart(&tmp2,"projectdir");
-    tmp.Replace("%projectdir",tmp2);
-    tmp2="";
-	  AppendFileNamePart(&tmp2,"filedir");
-    tmp.Replace("%filedir",tmp2);
-    tmp2="";
-	  AppendFileNamePart(&tmp2,"prefix");
-    tmp.Replace("%prefix",tmp2);
-    tmp2="";
-	  AppendFileNamePart(&tmp2,"number");
-    tmp.Replace("%number",tmp2);
-    tmp2="";
-	  AppendFileNamePart(&tmp2,"ext");
-    tmp.Replace("%ext",tmp2);
-    tmp2="";*/
-    OnShoot->run(tmp.GetBuffer());
+    tmp=tr->action;
+    this->AppendFormatedFileName(&tmp,tr->action);
+    tr->run(tmp.GetBuffer());
   }
 }
 
 
-/*
-void CCameraControlDlg::OnSize(UINT nType, int cx, int cy)
-{
-  
-  __super::OnSize(nType, cx, cy);
-}*/
 
-//void CCameraControlDlg::OnBnClickedButton21()
-//{
-//  // TODO: Add your control notification handler code here
-//}
-
-void CCameraControlDlg::OnBnClickedButton27()
+void CCameraControlDlg::FocusPhoto()
 {
   if(evfAFOff==1)
   {
@@ -984,14 +954,10 @@ void CCameraControlDlg::OnBnClickedButton27()
   }
 }
 
-void CCameraControlDlg::OnBnClickedButton28()
+void CCameraControlDlg::OpenFileDir()
 {
     CString tmp;
     AppendFormatedFileName(&tmp,"%drive%projectdir%filedir");
-	  /*AppendFileNamePart(&tmp,"drive");
-	  AppendFileNamePart(&tmp,"projectdir");
-	  AppendFileNamePart(&tmp,"filedir");*/
-    //MessageBox(tmp);
     ShellExecute (NULL,"explore",tmp,NULL,NULL,SW_SHOWNORMAL);
 }
 
@@ -1003,10 +969,53 @@ void CCameraControlDlg::OnEnChangeEdit1()
 
 void CCameraControlDlg::OnEnSetfocusEdit8()
 {
-  PictureWidthT.SetWindowTextA("");
+ //select all input text
+ PictureWidthT.PostMessage(EM_SETSEL, 0, -1);
 }
 
 void CCameraControlDlg::OnEnSetfocusEdit9()
 {
-  PictureHeightT.SetWindowTextA("");
+ //select all input text
+ PictureHeightT.PostMessage(EM_SETSEL, 0, -1);
+}
+
+void CCameraControlDlg::IncrementNumber()
+{
+  CString tmp;
+  NumberT.GetWindowTextA(tmp);
+  tmp.Format("%d",atoi(tmp)+1);
+  NumberT.SetWindowTextA(tmp);
+  current_page.SetWindowTextA("1");
+  PictureWidthT.SetFocus();
+}
+
+void CCameraControlDlg::DecrementNumber()
+{
+  CString tmp;
+  NumberT.GetWindowTextA(tmp);
+  tmp.Format("%d",atoi(tmp)-1);
+  NumberT.SetWindowTextA(tmp);
+  current_page.SetWindowTextA("1");
+  PictureWidthT.SetFocus();
+}
+
+
+void CCameraControlDlg::OnEnChangeNumber()
+{
+  current_page.SetWindowTextA("1");
+}
+
+void CCameraControlDlg::OnBnClickedCheck2()
+{
+  //disable / enable auto step
+  if(AutoStepEnabled.GetCheck())
+  {
+    current_page.EnableWindow(1);
+    prefix2T.EnableWindow(1);
+  }
+  else
+  {
+    current_page.EnableWindow(0);
+    prefix2T.EnableWindow(0);
+  }
 }
