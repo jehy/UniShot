@@ -51,7 +51,9 @@ CCameraControlDlg::CCameraControlDlg(CWnd* pParent )
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
   LifeViewDlg=new CLifeViewDlg();
+  
   LifeViewDlg->Create(IDD_DIALOG1,NULL);
+  //LifeViewDlg->_controller=this->_controller;
 }
 
 void CCameraControlDlg::DoDataExchange(CDataExchange* pDX)

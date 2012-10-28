@@ -257,7 +257,7 @@ public:
 	}
 
 
-protected:
+public:
 	//The command is received
 	void StoreAsync( Command *command )
 	{
