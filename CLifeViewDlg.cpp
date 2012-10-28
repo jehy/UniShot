@@ -73,45 +73,55 @@ void CLifeViewDlg::OnBnClickedCancel()
 
 void CLifeViewDlg::OnSize(UINT nType, int cx, int cy)
 {
-  //if(cx==0 && cy==0)
-  //  return;
   if(nType!=SIZE_RESTORED)
     return;
-  //we don't care about parameters - they are pretty fucked up in this callback
+  //we don't care about parameters - they are pretty fucked up in this callback. Scrollbars and everything else affects cx and cy. Better to take client area size.
   if((HWND)_pictureBox==(HWND)NULL)//not yet created
     return;
   CRect rect;
-  GetWindowRect(&rect);
+  //this->CalcWindowRect(&rect,CWnd::adjustBorder);
+  //_pictureBox.GetWindowRect(&rect);
+  this->GetWindowRect(&rect);
   cy=rect.Height();
   cx=rect.Width();
-  if(cx<200 || cy<200)
+
+  if(cx<200 || cy<200)// if it was accidentially created or resized too little
   {
     cx=500;
     cy=500;
   }
-  //if(PrevSize.x==cx&& PrevSize.y==cy)
- //   return;
-
 
   //see what dimension changed more
   //and change it to neccesary aspect ratio
 
-  if(abs(PrevSize.x-cx)>abs(PrevSize.y-cy))
-    //if X changed more
-    cy=(float)_pictureBox.data.sizeJpegLarge.height/(float)_pictureBox.data.sizeJpegLarge.width*(float)cx;
-  else
-    //if y changed more
-    cx=(float)_pictureBox.data.sizeJpegLarge.width/(float)_pictureBox.data.sizeJpegLarge.height*(float)cy;
 
   
   if(PrevSize.y!=cy || PrevSize.x!=cx)
   {
-    this->MoveWindow(rect.TopLeft().x,rect.TopLeft().y,cx,cy,1);
-    _pictureBox.MoveWindow(0,0,cx,cy,1);
+
+    if(abs(PrevSize.x-cx)>abs(PrevSize.y-cy))
+      //if X changed more
+      cy=(float)_pictureBox.data.sizeJpegLarge.height/(float)_pictureBox.data.sizeJpegLarge.width*(float)cx;
+    else
+      //if y changed more
+      cx=(float)_pictureBox.data.sizeJpegLarge.width/(float)_pictureBox.data.sizeJpegLarge.height*(float)cy;
+
+
+    CRect WndRect;
+    WndRect.SetRect(0,0,cx,cy);
+    this->CalcWindowRect(&WndRect,CWnd::adjustOutside);
+
+    PrevSize.x=WndRect.Width();
+    PrevSize.y=WndRect.Height();
+    
+    _pictureBox.SetWindowPos(NULL, 0, 0,cx,cy,SWP_NOZORDER);
+    this->
+SetWindowPos(NULL, rect.TopLeft().x,rect.TopLeft().y,WndRect.Width(),WndRect.Height(), SWP_NOMOVE | SWP_NOZORDER);
+    //_pictureBox.MoveWindow(0,0,cx,cy,1);
+    //this->MoveWindow(rect.TopLeft().x,rect.TopLeft().y,WndRect.Width(),WndRect.Height(),1);
+    //this->SetWindowPos(NULL, rect.TopLeft().x, rect.TopLeft().y, cx, cy, SWP_NOMOVE | SWP_NOZORDER);
     //CDialog::OnSize(nType, cx, cy);
   }
-  PrevSize.x=cx;
-  PrevSize.y=cy;
 }
 
 void CLifeViewDlg::OnRButtonDown(UINT nFlags, CPoint point)
