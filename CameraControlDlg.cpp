@@ -28,6 +28,7 @@
 #include "common\mvector.h"
 #include "common\allxml.h"
 #include "common\common_funcs.h"
+#include "CLifeViewDlg.h"
 #include <shlobj.h>
 
 
@@ -43,12 +44,14 @@
 CString PhotoSavePath;
 bool evfAFOff=1;
 // CCameraControlDlg 
-
+CLifeViewDlg* LifeViewDlg=NULL;
 
 CCameraControlDlg::CCameraControlDlg(CWnd* pParent )
 	: CDialog(CCameraControlDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+  LifeViewDlg=new CLifeViewDlg();
+  LifeViewDlg->Create(IDD_DIALOG1,NULL);
 }
 
 void CCameraControlDlg::DoDataExchange(CDataExchange* pDX)
@@ -58,7 +61,6 @@ void CCameraControlDlg::DoDataExchange(CDataExchange* pDX)
   DDX_Control(pDX, IDC_BUTTON1, _btnTakePicture);
   DDX_Control(pDX, IDC_PROGRESS1, _progress);
   //DDX_Control(pDX, IDC_EDIT1, _edit);
-  DDX_Control(pDX, IDC_PICT, _pictureBox);
   DDX_Control(pDX, IDC_COMBO1, _comboAEMode);
   DDX_Control(pDX, IDC_COMBO2, _comboTv);
   DDX_Control(pDX, IDC_COMBO3, _comboAv);
@@ -159,7 +161,9 @@ BOOL CCameraControlDlg::OnInitDialog()
 	this->InitProgramSett();
 	//this->InitPhotoSett();
 
-
+  this->MoveWindow(20,20,380,680,1);
+  //LifeViewDlg->ShowWindow(SW_SHOW);
+  LifeViewDlg->MoveWindow(20+380+5,20,500,500,1);
 	return TRUE;   // return TRUE  unless you set the focus to a control
 }
 
@@ -224,8 +228,8 @@ void CCameraControlDlg::setupListener(ActionListener* listener)
 	_btnEvfAfOFF.setActionCommand("evfAFOff");
 	_btnEvfAfOFF.addActionListener(listener);
 
-	_pictureBox.setActionCommand("downloadEVF");
-	_pictureBox.addActionListener(listener);
+	LifeViewDlg->_pictureBox.setActionCommand("downloadEVF");
+	LifeViewDlg->_pictureBox.addActionListener(listener);
 }
 
 
@@ -238,7 +242,7 @@ void CCameraControlDlg::setupObserver(Observable* ob)
 	ob->addObserver(static_cast<Observer*>(&_comboMeteringMode));
 	ob->addObserver(static_cast<Observer*>(&_comboExposureComp));
 	ob->addObserver(static_cast<Observer*>(&_comboImageQuality));
-	ob->addObserver(static_cast<Observer*>(&_pictureBox));
+	ob->addObserver(static_cast<Observer*>(&LifeViewDlg->_pictureBox));
 	ob->addObserver(static_cast<Observer*>(&_comboEvfAFMode));
 	ob->addObserver(static_cast<Observer*>(&_btnZoomZoom));
 }
@@ -262,6 +266,10 @@ void CCameraControlDlg::OnClose()
 	_comboEvfAFMode.EnableWindow(FALSE);	
 	_btnEvfAfON.EnableWindow(FALSE);
 	_btnEvfAfOFF.EnableWindow(FALSE);
+
+  LifeViewDlg->CloseWindow();
+  LifeViewDlg->DestroyWindow();
+  delete(LifeViewDlg);
 	__super::OnClose();
 }
 
@@ -378,6 +386,7 @@ LRESULT CCameraControlDlg::OnDownloadComplete(WPARAM wParam, LPARAM lParam)
 	_itoa_s(p,buffer,10,10);
 	current_page.SetWindowTextA(buffer);
   shootbtn.EnableWindow(1);
+  shootbtn.SetFocus();
 	return 0;
 }
 
@@ -390,14 +399,15 @@ LRESULT CCameraControlDlg::OnProgressReport(WPARAM wParam, LPARAM lParam)
 void CCameraControlDlg::OnBnClickedCheck1()
 {
 	if(Lifeview.GetCheck())
-		//_btnStartEVF.OnClicked();
-	fireEvent("startEVF");
-	//_btnStartEVF.addActionListener(listener);
-		//fireEvent("startEVF");
+  {
+	  fireEvent("startEVF");
+    LifeViewDlg->ShowWindow(SW_SHOW);
+  }
 	else
-		//_btnEndEVF.OnClicked();
-	fireEvent("endEVF");
-	// TODO: Add your control notification handler code here
+  {    
+	  fireEvent("endEVF");
+    LifeViewDlg->ShowWindow(SW_HIDE);
+  }
 }
 
 void CCameraControlDlg::OnBnClickedButton19()

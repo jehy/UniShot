@@ -217,6 +217,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CLifeViewDlg.h"
+				>
+			</File>
+			<File
 				RelativePath=".\EvfAFMode.h"
 				>
 			</File>
@@ -456,6 +460,10 @@
 			</File>
 			<File
 				RelativePath=".\CameraControlDlg.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CLifeViewDlg.cpp"
 				>
 			</File>
 			<File
