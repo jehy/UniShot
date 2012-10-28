@@ -1,0 +1,253 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Russian resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+#ifdef _WIN32
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+#pragma code_page(1251)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)\r\n"
+    "LANGUAGE 17, 1\r\n"
+    "#pragma code_page(932)\r\n"
+    "#include ""afxres.rc""\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\CameraControl.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_CAMERACONTROL_DIALOG DIALOGEX 0, 0, 432, 342
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "Unishot 2.0"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Снять",IDC_BUTTON1,105,31,70,20,BS_MULTILINE | NOT WS_VISIBLE
+    CONTROL         "",IDC_PROGRESS1,"msctls_progress32",WS_BORDER | 0x1,329,7,50,14
+    COMBOBOX        IDC_COMBO1,67,167,65,193,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Tv:",IDC_STATIC,13,184,10,8
+    LTEXT           "AEMode:",IDC_STATIC,13,171,30,8
+    COMBOBOX        IDC_COMBO2,67,184,65,193,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO3,67,201,65,193,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO4,67,216,65,193,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Av:",IDC_STATIC,13,200,10,8
+    LTEXT           "ISO:",IDC_STATIC,13,220,14,8
+    COMBOBOX        IDC_COMBO6,67,247,62,193,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "MeteringMode:",IDC_STATIC,13,237,51,11
+    LTEXT           "ExposureComp:",IDC_STATIC,13,253,53,11
+    COMBOBOX        IDC_COMBO5,67,231,96,193,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Start EVF",IDC_BUTTON2,167,88,50,14,NOT WS_VISIBLE
+    PUSHBUTTON      "End EVF",IDC_BUTTON3,167,106,50,14,NOT WS_VISIBLE
+    PUSHBUTTON      "<<<",IDC_BUTTON4,99,68,19,14,NOT WS_VISIBLE
+    PUSHBUTTON      "<<",IDC_BUTTON5,119,68,19,14,NOT WS_VISIBLE
+    LTEXT           "Focus:",IDC_STATIC,75,71,22,8,NOT WS_VISIBLE
+    PUSHBUTTON      "<",IDC_BUTTON6,139,68,19,14,NOT WS_VISIBLE
+    PUSHBUTTON      ">",IDC_BUTTON7,159,68,19,14,NOT WS_VISIBLE
+    PUSHBUTTON      ">>",IDC_BUTTON8,179,68,19,14,NOT WS_VISIBLE
+    PUSHBUTTON      ">>>",IDC_BUTTON9,199,68,19,14,NOT WS_VISIBLE
+    CONTROL         "",IDC_PICT,"Static",SS_BLACKFRAME,7,7,222,131
+    PUSHBUTTON      "Вверх",IDC_BUTTON10,177,180,31,14
+    LTEXT           "Настройка фокуса:",IDC_STATIC,160,169,66,8
+    PUSHBUTTON      "Влево",IDC_BUTTON11,157,196,31,14
+    PUSHBUTTON      "Вправо",IDC_BUTTON12,195,196,31,14
+    PUSHBUTTON      "Вниз",IDC_BUTTON13,177,213,31,14
+    LTEXT           "Приближение:",IDC_STATIC,13,319,50,8
+    PUSHBUTTON      "Целиком",IDC_BUTTON14,76,315,52,14
+    PUSHBUTTON      "Приблизить",IDC_BUTTON15,146,315,52,14
+    LTEXT           "Сохранять:",IDC_STATIC,13,264,53,11
+    COMBOBOX        IDC_COMBO7,67,263,167,193,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Press halfway",IDC_BUTTON16,17,17,50,21,BS_MULTILINE | NOT WS_VISIBLE
+    PUSHBUTTON      "Press completely",IDC_BUTTON17,17,42,50,20,BS_MULTILINE | NOT WS_VISIBLE
+    PUSHBUTTON      "Press Off",IDC_BUTTON18,17,66,50,20,BS_MULTILINE | NOT WS_VISIBLE
+    LTEXT           "Режим съёмки:",IDC_STATIC,13,282,52,8
+    COMBOBOX        IDC_COMBO8,67,280,112,193,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Сфокусироваться",IDC_BUTTON21,93,146,81,14,NOT WS_VISIBLE
+    PUSHBUTTON      "Выключить автофокус",IDC_BUTTON22,163,135,84,14,NOT WS_VISIBLE
+    CONTROL         "Видоискатель",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,247,36,60,10
+    LTEXT           "Файл настроек",IDC_STATIC,253,287,52,8
+    EDITTEXT        IDC_EDIT2,252,297,165,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Загрузить",IDC_BUTTON19,251,315,68,14
+    PUSHBUTTON      "Сохранить текущие как",IDC_BUTTON23,326,315,91,14
+    COMBOBOX        IDC_COMBO9,325,86,93,30,CBS_DROPDOWN | CBS_SORT | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Выбор проекта:",IDC_STATIC,252,90,55,8
+    LTEXT           "Путь к файлам (без слэша в начале и конце):",IDC_STATIC,252,167,154,8
+    LTEXT           "Используемый диск:",IDC_STATIC,252,154,70,8
+    COMBOBOX        IDC_COMBO10,329,154,35,30,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT3,255,179,111,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Обзор",IDC_BUTTON24,367,179,50,14
+    PUSHBUTTON      "Загрузить проекты с сервера",IDC_BUTTON25,252,68,113,16,WS_DISABLED
+    EDITTEXT        IDC_EDIT4,252,118,165,14,ES_AUTOHSCROLL | WS_DISABLED
+    LTEXT           "Директория проекта:",IDC_STATIC,252,104,75,8
+    GROUPBOX        "Управление проектами:",IDC_STATIC,247,54,178,86
+    GROUPBOX        "Настройки пути сохранения",IDC_STATIC,247,143,178,115
+    GROUPBOX        "Настройки съёмки",IDC_STATIC,7,159,230,179
+    GROUPBOX        "Настройки",IDC_STATIC,247,279,178,59
+    PUSHBUTTON      "Снять",IDC_BUTTON26,247,7,63,23
+    EDITTEXT        IDC_EDIT1,303,196,64,14,ES_AUTOHSCROLL
+    LTEXT           "Префикс",IDC_STATIC,260,202,30,8
+    LTEXT           "Номер тек. страницы",IDC_STATIC,252,220,73,8
+    LTEXT           "Кол-во знаков номера",IDC_STATIC,252,235,76,10
+    EDITTEXT        IDC_EDIT5,327,214,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT6,346,232,22,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT7,189,238,40,14,ES_AUTOHSCROLL | NOT WS_VISIBLE
+    PUSHBUTTON      "Фокусировка",IDC_BUTTON27,7,144,81,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "TODO: <Company name>"
+            VALUE "FileDescription", "TODO: <File description>"
+            VALUE "FileVersion", "1.0.0.1"
+            VALUE "InternalName", "CameraControl.exe"
+            VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
+            VALUE "OriginalFilename", "CameraControl.exe"
+            VALUE "ProductName", "TODO: <Product name>"
+            VALUE "ProductVersion", "1.0.0.1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_CAMERACONTROL_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 425
+        VERTGUIDE, 13
+        VERTGUIDE, 67
+        VERTGUIDE, 247
+        VERTGUIDE, 252
+        VERTGUIDE, 346
+        VERTGUIDE, 417
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 338
+        HORZGUIDE, 193
+        HORZGUIDE, 210
+        HORZGUIDE, 228
+        HORZGUIDE, 245
+        HORZGUIDE, 324
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_ABOUTBOX            "&About CameraControl..."
+END
+
+#endif    // Russian resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
+LANGUAGE 17, 1
+#pragma code_page(932)
+#include "afxres.rc"
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

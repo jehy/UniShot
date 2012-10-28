@@ -1,0 +1,1 @@
+void WriteLog(CString data);
