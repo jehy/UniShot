@@ -26,8 +26,8 @@ public:
 	CPropertyComboBox();
 	virtual ~CPropertyComboBox();
 
-protected:
 	void OnSelChange();
+protected:
 
 	DECLARE_MESSAGE_MAP()
 

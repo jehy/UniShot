@@ -1,6 +1,3 @@
-// LifeViewDlg.cpp : implementation file
-//
-
 #include "stdafx.h"
 #include "CLifeViewDlg.h"
 #include "CameraControlDlg.h"
@@ -11,6 +8,16 @@
 IMPLEMENT_DYNAMIC(CLifeViewDlg, CDialog)
 
 
+BOOL CLifeViewDlg::PreTranslateMessage(MSG* pMsg) 
+{
+  //catch hotkeys
+  if(pMsg->message==WM_KEYDOWN)
+  {
+    this->Control->SetFocus();
+    this->Control->PreTranslateMessage(pMsg);
+  }
+  return CDialog::PreTranslateMessage(pMsg);
+}
 
 CLifeViewDlg::CLifeViewDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CLifeViewDlg::IDD, pParent)
@@ -48,6 +55,8 @@ BEGIN_MESSAGE_MAP(CLifeViewDlg, CDialog)
   ON_WM_SIZE()
   ON_WM_LBUTTONDOWN()
   ON_WM_RBUTTONDOWN()
+  ON_WM_ACTIVATE()
+  ON_WM_SHOWWINDOW()
 END_MESSAGE_MAP()
 
 // LifeViewDlg message handlers
@@ -64,16 +73,24 @@ void CLifeViewDlg::OnBnClickedCancel()
 
 void CLifeViewDlg::OnSize(UINT nType, int cx, int cy)
 {
+  //if(cx==0 && cy==0)
+  //  return;
+  if(nType!=SIZE_RESTORED)
+    return;
   //we don't care about parameters - they are pretty fucked up in this callback
   if((HWND)_pictureBox==(HWND)NULL)//not yet created
     return;
-
   CRect rect;
   GetWindowRect(&rect);
   cy=rect.Height();
   cx=rect.Width();
-  int cy2=cy;
-  int cx2=cx;
+  if(cx<200 || cy<200)
+  {
+    cx=500;
+    cy=500;
+  }
+  //if(PrevSize.x==cx&& PrevSize.y==cy)
+ //   return;
 
 
   //see what dimension changed more
@@ -81,18 +98,18 @@ void CLifeViewDlg::OnSize(UINT nType, int cx, int cy)
 
   if(abs(PrevSize.x-cx)>abs(PrevSize.y-cy))
     //if X changed more
-    cy2=(float)_pictureBox.data.sizeJpegLarge.height/(float)_pictureBox.data.sizeJpegLarge.width*(float)cx;
+    cy=(float)_pictureBox.data.sizeJpegLarge.height/(float)_pictureBox.data.sizeJpegLarge.width*(float)cx;
   else
     //if y changed more
-    cx2=(float)_pictureBox.data.sizeJpegLarge.width/(float)_pictureBox.data.sizeJpegLarge.height*(float)cy;
+    cx=(float)_pictureBox.data.sizeJpegLarge.width/(float)_pictureBox.data.sizeJpegLarge.height*(float)cy;
 
   
-  if(cy2!=cy || cx2!=cx)
+  if(PrevSize.y!=cy || PrevSize.x!=cx)
   {
-    this->MoveWindow(rect.TopLeft().x,rect.TopLeft().y,cx2,cy2,1);
+    this->MoveWindow(rect.TopLeft().x,rect.TopLeft().y,cx,cy,1);
+    _pictureBox.MoveWindow(0,0,cx,cy,1);
     //CDialog::OnSize(nType, cx, cy);
   }
-  _pictureBox.MoveWindow(0,0,cx2,cy2,1);
   PrevSize.x=cx;
   PrevSize.y=cy;
 }
@@ -130,19 +147,25 @@ void CLifeViewDlg::OnRButtonDown(UINT nFlags, CPoint point)
   
   if(this->Control->evfAFOff==1)
     this->Control->FocusPhoto();
+  this->Control->SetFocus();
 }
 
 void CLifeViewDlg::OnLButtonDown(UINT nFlags, CPoint point)
 {
   this->Control->Shoot();
+  this->Control->SetFocus();
 }
 
 
-/*
+
 void CLifeViewDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 {
-  if(bShow==1)
+  if(PrevSize.x==0 && PrevSize.y==0)
     this->OnSize(0,500,500);
   CDialog::OnShowWindow(bShow, nStatus);
+}/*
+void CLifeViewDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
+{
+  CDialog::OnActivate(nState, pWndOther, bMinimized);
 }
 */

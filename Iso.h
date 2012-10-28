@@ -30,9 +30,9 @@ public:
 
 	//observer
 	virtual void update(Observable* from, CameraEvent *e);
+	void OnSelChange();
 
 protected:
-	void OnSelChange();
 	afx_msg LRESULT OnPropertyChanged(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnPropertyDescChanged(WPARAM wParam, LPARAM lParam);
 

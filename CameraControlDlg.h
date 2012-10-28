@@ -136,5 +136,6 @@ public:
   afx_msg void DecrementNumber();
   CButton AutoStepEnabled;
   afx_msg void OnEnChangeNumber();
-  afx_msg void OnBnClickedCheck2();
+  afx_msg void CheckAutoStep();
+  afx_msg void OnEnSetfocusEdit11();
 };

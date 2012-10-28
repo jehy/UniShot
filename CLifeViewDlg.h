@@ -5,8 +5,6 @@
 
 #include "CameraControl.h"
 #include "CameraControlDlg.h"
-#include ".\CameraControldlg.h"
-
 #include "EDSDK.h"
 #include "EDSDKTypes.h"
 
@@ -43,7 +41,7 @@ protected:
 public:
   void SetControl(CCameraControlDlg* Control);
   CCameraControlDlg* Control;
-	//virtual BOOL OnInitDialog();
-//public:
- // afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+  BOOL PreTranslateMessage(MSG* pMsg);
+  //afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
+afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 };

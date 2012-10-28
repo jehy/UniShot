@@ -48,7 +48,8 @@ public:
 	{
 		if(_hThread)
 		{
-			::WaitForSingleObject( _hThread, INFINITE );
+			//cheat by Jehy
+      ::WaitForSingleObject( _hThread, 2000);
 			_hThread = NULL;
 		}
 	}

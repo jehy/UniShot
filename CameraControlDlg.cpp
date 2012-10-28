@@ -29,7 +29,7 @@ BOOL CCameraControlDlg::PreTranslateMessage(MSG* pMsg)
     //MessageBox(x);
     hotkey* h=hotkeys.Find(pMsg->wParam);
     if(h!=NULL)
-      RunAction(h->action);
+        RunAction(h->action);
   }
   return CDialog::PreTranslateMessage(pMsg);
 }
@@ -52,10 +52,6 @@ CCameraControlDlg::CCameraControlDlg(CWnd* pParent )
 	: CDialog(CCameraControlDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-  LifeViewDlg=new CLifeViewDlg();
-  LifeViewDlg->Create(IDD_DIALOG1,NULL);
-  LifeViewDlg->SetControl(this);
-  evfAFOff=1;
 }
 
 void CCameraControlDlg::DoDataExchange(CDataExchange* pDX)
@@ -126,12 +122,16 @@ BEGIN_MESSAGE_MAP(CCameraControlDlg, CDialog)
 ON_BN_CLICKED(IDC_BUTTON27, &CCameraControlDlg::FocusPhoto)
 ON_BN_CLICKED(IDC_BUTTON28, &CCameraControlDlg::OpenFileDir)
 ON_EN_CHANGE(IDC_EDIT1, &CCameraControlDlg::OnEnChangeEdit1)
-ON_EN_SETFOCUS(IDC_EDIT8, &CCameraControlDlg::OnEnSetfocusEdit8)
-ON_EN_SETFOCUS(IDC_EDIT9, &CCameraControlDlg::OnEnSetfocusEdit9)
+//ON_EN_SETFOCUS(IDC_EDIT8, &CCameraControlDlg::OnEnSetfocusEdit8)
+//ON_EN_SETFOCUS(IDC_EDIT9, &CCameraControlDlg::OnEnSetfocusEdit9)
 ON_BN_CLICKED(IDC_BUTTON30, &CCameraControlDlg::IncrementNumber)
 ON_BN_CLICKED(IDC_BUTTON29, &CCameraControlDlg::DecrementNumber)
 ON_EN_CHANGE(IDC_EDIT11, &CCameraControlDlg::OnEnChangeNumber)
-ON_BN_CLICKED(IDC_CHECK2, &CCameraControlDlg::OnBnClickedCheck2)
+ON_BN_CLICKED(IDC_CHECK2, &CCameraControlDlg::CheckAutoStep)
+//ON_EN_SETFOCUS(IDC_EDIT11, &CCameraControlDlg::OnEnSetfocusEdit11)
+//ON_EN_KILLFOCUS(IDC_EDIT11, &CCameraControlDlg::OnEnKillfocusEdit11)
+//ON_EN_KILLFOCUS(IDC_EDIT8, &CCameraControlDlg::OnEnKillfocusEdit8)
+//ON_EN_KILLFOCUS(IDC_EDIT9, &CCameraControlDlg::OnEnKillfocusEdit9)
 END_MESSAGE_MAP()
 
 
@@ -158,14 +158,7 @@ BOOL CCameraControlDlg::OnInitDialog()
 	this->InitProgramSett();
 	//this->InitPhotoSett();
 
-  //move to left size of the screen
-  this->MoveWindow(20,20,380,800,1);
-
-  //move invisible lifeview window to edge
-  LifeViewDlg->MoveWindow(20+380+5,20,500,500,1);
-
   //auto define aspect ratio for currect photo device
-  //LifeViewDlg->OnSize(0,500,500);
 
   
   SetBigFont(&prefix);
@@ -174,6 +167,16 @@ BOOL CCameraControlDlg::OnInitDialog()
   SetBigFont(&current_page);
   SetBigFont(&PictureWidthT);
   SetBigFont(&PictureHeightT);
+
+  //move to left size of the screen
+  this->MoveWindow(20,20,380,800,1);
+  
+  LifeViewDlg=new CLifeViewDlg();
+  LifeViewDlg->SetControl(this);
+  LifeViewDlg->Create(IDD_DIALOG1,NULL);
+  evfAFOff=1;
+  //move invisible lifeview window to edge
+  LifeViewDlg->MoveWindow(20+380+5,20,500,500,1);
 
   if(!mode_offline)
   {
@@ -184,6 +187,7 @@ BOOL CCameraControlDlg::OnInitDialog()
 	  //Execute controller
 	  _controller->run();
   }
+
 	return TRUE;
 }
 
@@ -295,6 +299,7 @@ void CCameraControlDlg::OnClose()
 
   triggers.clear();
   hotkeys.clear();
+  fireEvent("endEVF");
 	fireEvent("closing");
 	Lifeview.EnableWindow(FALSE);
 	_btnTakePicture.EnableWindow(FALSE);	
@@ -455,9 +460,9 @@ LRESULT CCameraControlDlg::OnDownloadComplete(WPARAM wParam, LPARAM lParam)
     p+=atoi(tmp2);
     tmp.Format("%d",p);
 	  current_page.SetWindowTextA(tmp);
-    shootbtn.EnableWindow(1);
-    shootbtn.SetFocus();
   }
+  shootbtn.EnableWindow(1);
+  shootbtn.SetFocus();
 
 	return 0;
 }
@@ -570,22 +575,34 @@ void CCameraControlDlg::InitPhotoSett()
 	
 	//Loading to select lists
   SetComboSett(&_comboAEMode,xmlvec->GetItemOnlyChild(child,"_comboAEMode",0)->subtext);
+  _comboAEMode.OnSelChange();
   SetComboSett(&_comboTv,xmlvec->GetItemOnlyChild(child,"_comboTv",0)->subtext);
+  _comboTv.OnSelChange();
   SetComboSett(&_comboAv,xmlvec->GetItemOnlyChild(child,"_comboAv",0)->subtext);
+  _comboAv.OnSelChange();
   SetComboSett(&_comboIso,xmlvec->GetItemOnlyChild(child,"_comboIso",0)->subtext);
+  _comboIso.OnSelChange();
   SetComboSett(&_comboMeteringMode,xmlvec->GetItemOnlyChild(child,"_comboMeteringMode",0)->subtext);
+  _comboMeteringMode.OnSelChange();
   SetComboSett(&_comboExposureComp,xmlvec->GetItemOnlyChild(child,"_comboExposureComp",0)->subtext);
+  _comboExposureComp.OnSelChange();
   SetComboSett(&_comboEvfAFMode,xmlvec->GetItemOnlyChild(child,"_comboEvfAFMode",0)->subtext);
+  _comboEvfAFMode.OnSelChange();
   SetComboSett(&_comboImageQuality,xmlvec->GetItemOnlyChild(child,"_comboImageQuality",0)->subtext);
+  _comboImageQuality.OnSelChange();
 
 	Lifeview.SetCheck(atoi(xmlvec->GetItemOnlyChild(child,"Lifeview",0)->subtext));
-
+	AutoStepEnabled.SetCheck(atoi(xmlvec->GetItemOnlyChild(child,"AutoStepEnabled",0)->subtext));
+  CheckAutoStep();
 //set drive if mapped
   SetComboSett(&drivebox,xmlvec->GetItemOnlyChild(child,"drivebox",0)->subtext);
 
 	//set text values
 	filedir.SetWindowTextA(xmlvec->GetItemOnlyChild(child,"filedir",0)->subtext);
+	NumberT.SetWindowTextA(xmlvec->GetItemOnlyChild(child,"Number",0)->subtext);
+	AutoStepT.SetWindowTextA(xmlvec->GetItemOnlyChild(child,"AutoStep",0)->subtext);
 	prefix.SetWindowTextA(xmlvec->GetItemOnlyChild(child,"prefix",0)->subtext);
+	prefix2T.SetWindowTextA(xmlvec->GetItemOnlyChild(child,"prefix2",0)->subtext);
 	current_page.SetWindowTextA(xmlvec->GetItemOnlyChild(child,"current_page",0)->subtext);
 	number_signs.SetWindowTextA(xmlvec->GetItemOnlyChild(child,"number_signs",0)->subtext);
 
@@ -675,6 +692,10 @@ void CCameraControlDlg::SavePhotoSett(char* path)
   else
     SettText.Append("<Lifeview>0</Lifeview>");
 
+  if(AutoStepEnabled.GetCheck())
+    SettText.Append("<AutoStepEnabled>1</AutoStepEnabled>");
+  else
+    SettText.Append("<AutoStepEnabled>0</AutoStepEnabled>");
   GetComboSett(&drivebox,"drivebox",&SettText);
 	
 	SettText.Append("<filedir>");
@@ -682,16 +703,31 @@ void CCameraControlDlg::SavePhotoSett(char* path)
 	SettText.Append(temp);
 	SettText.Append("</filedir>");
 	
+	SettText.Append("<AutoStep>");
+	AutoStepT.GetWindowTextA(temp);
+	SettText.Append(temp);
+	SettText.Append("</AutoStep>");
+
 	SettText.Append("<prefix>");
 	prefix.GetWindowTextA(temp);
 	SettText.Append(temp);
 	SettText.Append("</prefix>");
 	
+	SettText.Append("<prefix2>");
+	prefix2T.GetWindowTextA(temp);
+	SettText.Append(temp);
+	SettText.Append("</prefix2>");
+
+	SettText.Append("<Number>");
+	NumberT.GetWindowTextA(temp);
+	SettText.Append(temp);
+	SettText.Append("</Number>");
+	
 	SettText.Append("<current_page>");
 	current_page.GetWindowTextA(temp);
 	SettText.Append(temp);
 	SettText.Append("</current_page>");
-	
+
 	SettText.Append("<number_signs>");
 	number_signs.GetWindowTextA(temp);
 	SettText.Append(temp);
@@ -969,21 +1005,27 @@ void CCameraControlDlg::OnEnChangeEdit1()
 
 void CCameraControlDlg::OnEnSetfocusEdit8()
 {
- //select all input text
  PictureWidthT.PostMessage(EM_SETSEL, 0, -1);
 }
 
 void CCameraControlDlg::OnEnSetfocusEdit9()
 {
- //select all input text
- PictureHeightT.PostMessage(EM_SETSEL, 0, -1);
+  PictureHeightT.PostMessage(EM_SETSEL, 0, -1);
+}
+
+void CCameraControlDlg::OnEnSetfocusEdit11()
+{
+  NumberT.PostMessage(EM_SETSEL, 0, -1);
 }
 
 void CCameraControlDlg::IncrementNumber()
 {
   CString tmp;
   NumberT.GetWindowTextA(tmp);
+  int l=tmp.GetLength();
   tmp.Format("%d",atoi(tmp)+1);
+  while(tmp.GetLength()<l)
+    tmp.Insert(0,"0");
   NumberT.SetWindowTextA(tmp);
   current_page.SetWindowTextA("1");
   PictureWidthT.SetFocus();
@@ -993,7 +1035,10 @@ void CCameraControlDlg::DecrementNumber()
 {
   CString tmp;
   NumberT.GetWindowTextA(tmp);
+  int l=tmp.GetLength();
   tmp.Format("%d",atoi(tmp)-1);
+  while(tmp.GetLength()<l)
+    tmp.Insert(0,"0");
   NumberT.SetWindowTextA(tmp);
   current_page.SetWindowTextA("1");
   PictureWidthT.SetFocus();
@@ -1005,7 +1050,7 @@ void CCameraControlDlg::OnEnChangeNumber()
   current_page.SetWindowTextA("1");
 }
 
-void CCameraControlDlg::OnBnClickedCheck2()
+void CCameraControlDlg::CheckAutoStep()
 {
   //disable / enable auto step
   if(AutoStepEnabled.GetCheck())
@@ -1019,3 +1064,4 @@ void CCameraControlDlg::OnBnClickedCheck2()
     prefix2T.EnableWindow(0);
   }
 }
+

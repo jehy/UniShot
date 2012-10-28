@@ -50,7 +50,10 @@ void SetComboSett(CComboBox* combo,char* val)
   {
     combo->GetLBText(i,tmp);
     if(!strcmp(tmp.GetBuffer(),val))
+    {
       combo->SetCurSel(i);
+      return;
+    }
   }
 }
 
