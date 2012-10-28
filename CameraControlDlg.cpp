@@ -111,6 +111,9 @@ BEGIN_MESSAGE_MAP(CCameraControlDlg, CDialog)
 	ON_MESSAGE(WM_USER_DOWNLOAD_COMPLETE, OnDownloadComplete)
 	ON_MESSAGE(WM_USER_PROGRESS_REPORT, OnProgressReport)
 	ON_WM_CLOSE()
+  ON_BN_CLICKED(IDOK, &CCameraControlDlg::OnBnClickedOk)
+  ON_BN_CLICKED(IDCANCEL, &CCameraControlDlg::OnBnClickedCancel)
+
 	ON_BN_CLICKED(IDC_CHECK1, &CCameraControlDlg::OnBnClickedCheck1)
 	ON_BN_CLICKED(IDC_BUTTON19, &CCameraControlDlg::OnBnClickedButton19)
 	ON_BN_CLICKED(IDC_BUTTON23, &CCameraControlDlg::OnBnClickedButton23)
@@ -125,6 +128,8 @@ BEGIN_MESSAGE_MAP(CCameraControlDlg, CDialog)
 ON_BN_CLICKED(IDC_BUTTON27, &CCameraControlDlg::OnBnClickedButton27)
 ON_BN_CLICKED(IDC_BUTTON28, &CCameraControlDlg::OnBnClickedButton28)
 ON_EN_CHANGE(IDC_EDIT1, &CCameraControlDlg::OnEnChangeEdit1)
+ON_EN_SETFOCUS(IDC_EDIT8, &CCameraControlDlg::OnEnSetfocusEdit8)
+ON_EN_SETFOCUS(IDC_EDIT9, &CCameraControlDlg::OnEnSetfocusEdit9)
 END_MESSAGE_MAP()
 
 
@@ -696,6 +701,28 @@ void CCameraControlDlg::SavePhotoSett(char* path)
 	file_put_contents(z.GetBuffer(),SettText.GetBuffer());
 }
 
+int CALLBACK BrowseForFolderCallback(HWND hwnd,UINT uMsg,LPARAM lp, LPARAM pData)
+{
+	char szPath[MAX_PATH];
+
+	switch(uMsg)
+	{
+		case BFFM_INITIALIZED:
+			SendMessage(hwnd, BFFM_SETSELECTION, TRUE, pData);
+			break;
+
+		case BFFM_SELCHANGED: 
+			if (SHGetPathFromIDList((LPITEMIDLIST) lp ,szPath)) 
+			{
+				SendMessage(hwnd, BFFM_SETSTATUSTEXT,0,(LPARAM)szPath);	
+
+			}
+			break;
+	}
+
+	return 0;
+}
+
 
 void CCameraControlDlg::OnBnClickedButton24()
 {
@@ -718,36 +745,40 @@ void CCameraControlDlg::OnBnClickedButton24()
 	HRESULT hR= SHParseDisplayName(temp,0, &pidlRoot, 0, 0);
 
 
-	TCHAR path[500];
+	TCHAR path[600];//more then MAX_path, just in case...
   //set begining path
   tmp="";
-  AppendFormatedFileName(&tmp,"%drive%projectdir%filedir%");
-  strcpy_s(path,500,tmp.GetBuffer());
-	BROWSEINFO bi={NULL,pidlRoot,path,_T("Пожалуйста, выберите папку для сохранения фотографий"),BIF_USENEWUI+BIF_SHAREABLE,NULL,
-   NULL};
+  AppendFormatedFileName(&tmp,"%drive%projectdir%filedir");
+  BROWSEINFO bi;
+	bi.hwndOwner = NULL;
+	bi.pidlRoot = pidlRoot;
+	bi.pszDisplayName = path;
+	bi.lpszTitle = _T("Пожалуйста, выберите папку для сохранения фотографий");
+	bi.ulFlags = BIF_USENEWUI+BIF_SHAREABLE; 
+	bi.lpfn = BrowseForFolderCallback;
+  bi.lParam = (LPARAM)tmp.GetBuffer();
 
 
-    LPITEMIDLIST pidl = SHBrowseForFolder ( &bi );
-    if ( pidl != 0 )//if folder selected
+  LPITEMIDLIST pidl = SHBrowseForFolder ( &bi );
+  if ( pidl != 0 )//if folder selected
+  {
+    if ( SHGetPathFromIDList ( pidl, path ) )
     {
-	   if ( SHGetPathFromIDList ( pidl, path ) )
-     {
-       tmp=path;
-       tmp=tmp.Right(tmp.GetLength()-3);
-		   filedir.SetWindowTextA(tmp);
-
-     }
-	   else
-		   MessageBox("Не получается получить путь к директории","Ошибка!",MB_OK);
+      tmp=path;
+      tmp=tmp.Right(tmp.GetLength()-3);
+	    filedir.SetWindowTextA(tmp);
+    }
+    else
+	    MessageBox("Не получается получить путь к директории","Ошибка!",MB_OK);
 
         // free memory used
-        IMalloc * imalloc = 0;
-        if ( SUCCEEDED( SHGetMalloc ( &imalloc )) )
-        {
-            imalloc->Free ( pidl );
-            imalloc->Release ( );
-        }
+    IMalloc * imalloc = 0;
+    if ( SUCCEEDED( SHGetMalloc ( &imalloc )) )
+    {
+      imalloc->Free ( pidl );
+      imalloc->Release ( );
     }
+  }
 }
 
 //void CCameraControlDlg::OnBnClickedButton1()
@@ -968,4 +999,14 @@ void CCameraControlDlg::OnEnChangeEdit1()
 {
   // prefix changed. set current page to 1
   current_page.SetWindowTextA("1");
+}
+
+void CCameraControlDlg::OnEnSetfocusEdit8()
+{
+  PictureWidthT.SetWindowTextA("");
+}
+
+void CCameraControlDlg::OnEnSetfocusEdit9()
+{
+  PictureHeightT.SetWindowTextA("");
 }

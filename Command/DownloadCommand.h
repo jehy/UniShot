@@ -67,7 +67,7 @@ public:
 			temp.Append(dirItemInfo.szFileName);
 			temp=temp.Right(temp.GetLength()-temp.ReverseFind('.'));//get ext
 			fullname.Append(temp);
-			err = EdsCreateFileStream(temp.GetBuffer(), kEdsFileCreateDisposition_CreateAlways, kEdsAccess_ReadWrite, &stream);
+			err = EdsCreateFileStream(fullname.GetBuffer(), kEdsFileCreateDisposition_CreateAlways, kEdsAccess_ReadWrite, &stream);
 		}	
 
 		//Set Progress

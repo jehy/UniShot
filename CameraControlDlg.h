@@ -149,4 +149,6 @@ public:
   CEdit PictureHeightT;
   afx_msg void OnBnClickedOk();
   afx_msg void OnBnClickedCancel();
+  afx_msg void OnEnSetfocusEdit8();
+  afx_msg void OnEnSetfocusEdit9();
 };
