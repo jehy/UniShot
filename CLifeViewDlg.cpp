@@ -47,7 +47,7 @@ BEGIN_MESSAGE_MAP(CLifeViewDlg, CDialog)
   ON_BN_CLICKED(IDCANCEL, &CLifeViewDlg::OnBnClickedCancel)
   ON_WM_SIZE()
   ON_WM_LBUTTONDOWN()
-  ON_WM_LBUTTONUP()
+  ON_WM_RBUTTONDOWN()
   //ON_WM_SHOWWINDOW()
 END_MESSAGE_MAP()
 
@@ -98,6 +98,10 @@ void CLifeViewDlg::OnSize(UINT nType, int cx, int cy)
   PrevSize.y=cy;
 }
 
+void CLifeViewDlg::OnRButtonDown(UINT nFlags, CPoint point)
+{
+  this->Control->OnBnClickedButton26();//focus
+}
 
 void CLifeViewDlg::OnLButtonDown(UINT nFlags, CPoint point)
 {
@@ -136,32 +140,6 @@ void CLifeViewDlg::OnLButtonDown(UINT nFlags, CPoint point)
   CDialog::OnLButtonDown(nFlags, point);
 }
 
-void CLifeViewDlg::OnLButtonUp(UINT nFlags, CPoint point)
-{
-  /*MouseState=0;
-  FromPoint.x=point.x-FromPoint.x;
-  FromPoint.y=point.y-FromPoint.y;
-  
-  CRect rect;
-  GetWindowRect(&rect);
-  
-
-	const int stepY = 128;
-	const int stepX = 128;
-  CameraModel* _model=getCameraModel();
-	EdsPoint newpoint = _model->getEvfZoomPosition();
-
-  
-	newpoint.x += FromPoint.x;
-	newpoint.y += FromPoint.y;
-  //newpoint.x/=rect.right;
-  //newpoint.y/=rect.bottom;
-
-	if(newpoint.y < 0) newpoint.y = 0;
-  this->_controller->StoreAsync(new SetPropertyCommand<EdsPoint>(_model, kEdsPropID_Evf_ZoomPosition, newpoint));			
-*/
-  CDialog::OnLButtonUp(nFlags, point);
-}
 
 /*
 void CLifeViewDlg::OnShowWindow(BOOL bShow, UINT nStatus)

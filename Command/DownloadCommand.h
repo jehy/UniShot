@@ -62,12 +62,12 @@ public:
 		//Make the file stream at the forwarding destination
 		if(err == EDS_ERR_OK)
 		{	
-			/*CString fullname,temp;
+      CString fullname,temp;
 			fullname.Append(PhotoSavePath);
 			temp.Append(dirItemInfo.szFileName);
 			temp=temp.Right(temp.GetLength()-temp.ReverseFind('.'));//get ext
-			fullname.Append(temp);*/
-				err = EdsCreateFileStream(PhotoSavePath.GetBuffer(), kEdsFileCreateDisposition_CreateAlways, kEdsAccess_ReadWrite, &stream);
+			fullname.Append(temp);
+			err = EdsCreateFileStream(temp.GetBuffer(), kEdsFileCreateDisposition_CreateAlways, kEdsAccess_ReadWrite, &stream);
 		}	
 
 		//Set Progress

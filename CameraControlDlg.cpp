@@ -261,6 +261,17 @@ void CCameraControlDlg::setupObserver(Observable* ob)
 	ob->addObserver(static_cast<Observer*>(&_btnZoomZoom));
 }
 
+
+void CCameraControlDlg::OnBnClickedOk()
+{
+  //OnOK();
+}
+
+void CCameraControlDlg::OnBnClickedCancel()
+{
+  //OnCancel();
+}
+
 void CCameraControlDlg::OnClose()
 {
 	int z=MessageBox("Хотите ли вы сохранить текущие настройки перед выходом?","Сообщение",MB_YESNO);
@@ -693,6 +704,7 @@ void CCameraControlDlg::OnBnClickedButton24()
 		MessageBox("Пожалуйста, выберите сначала диск для работы","Ошибка",MB_OK);
 		return;
 	}
+  //set root folder you can't go up
 	LPITEMIDLIST pidlRoot = NULL;
 	PCWSTR temp;
 	CString tmp;
@@ -706,7 +718,11 @@ void CCameraControlDlg::OnBnClickedButton24()
 	HRESULT hR= SHParseDisplayName(temp,0, &pidlRoot, 0, 0);
 
 
-	TCHAR path[_MAX_PATH];
+	TCHAR path[500];
+  //set begining path
+  tmp="";
+  AppendFormatedFileName(&tmp,"%drive%projectdir%filedir%");
+  strcpy_s(path,500,tmp.GetBuffer());
 	BROWSEINFO bi={NULL,pidlRoot,path,_T("Пожалуйста, выберите папку для сохранения фотографий"),BIF_USENEWUI+BIF_SHAREABLE,NULL,
    NULL};
 
@@ -880,7 +896,8 @@ void CCameraControlDlg::OnBnClickedButton26()
 		if(n==IDCANCEL)
 			return;
 	}
-  PhotoSavePath=fname;//save here
+  PhotoSavePath="";//save here
+  AppendFormatedFileName(&PhotoSavePath,"%drive%projectdir%filedir%prefix%number");//without ext
   shootbtn.EnableWindow(0);
 	fireEvent("TakePicture");
   return;//trigger in beta mode
